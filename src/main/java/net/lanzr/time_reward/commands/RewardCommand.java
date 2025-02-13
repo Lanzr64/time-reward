@@ -1,22 +1,21 @@
 package net.lanzr.time_reward.commands;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.sun.jdi.connect.Connector;
 import net.lanzr.time_reward.api.*;
 import net.lanzr.time_reward.inventory.LZMenu;
-import net.lanzr.time_reward.inventory.RewardScreen;
 import net.lanzr.time_reward.inventory.playerRewardContainer;
 import net.lanzr.time_reward.save.LZSavedData;
-import net.lanzr.time_reward.save.PlayerSavedData;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.commands.arguments.RangeArgument;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.server.command.EnumArgument;
 import org.jetbrains.annotations.Nullable;
 
 public class RewardCommand {
@@ -35,8 +34,23 @@ public class RewardCommand {
                         .requires(ctx-> ctx.hasPermission(4))
         );
         event.getDispatcher().register(
-                Commands.literal("tyj-setReward").requires(ctx -> ctx.hasPermission(4))
+                Commands.literal("tyj-setReward")
                         .executes(ctx -> cb_setReward(ctx.getSource().getPlayer()))
+                        .requires(ctx-> ctx.hasPermission(4))
+        );
+        event.getDispatcher().register(
+                Commands.literal("tyj-rewardAddRecord")
+                        .then(Commands.argument("target", StringArgumentType.string())
+                            .then(Commands.argument("year", IntegerArgumentType.integer())
+                                    .then(Commands.argument("month", IntegerArgumentType.integer())
+                                            .then(Commands.argument("day", IntegerArgumentType.integer())
+                            .executes(ctx -> cb_addRecord(
+                                    StringArgumentType.getString(ctx,"target"),
+                                    IntegerArgumentType.getInteger(ctx,"year"),
+                                    IntegerArgumentType.getInteger(ctx,"month"),
+                                    IntegerArgumentType.getInteger(ctx,"day")
+                                    )
+                            )))))
                         .requires(ctx-> ctx.hasPermission(4))
         );
         event.getDispatcher().register(
@@ -56,15 +70,17 @@ public class RewardCommand {
             }
             // 判断玩家是否有领取权限
             CommentInfo commentInfo = new CommentInfo();
-            int rewardLevel = PlayerCommentTools.getPlayerComment(player.getName().getString(),commentInfo);
+            PlayerCommentTools.getPlayerComment(player.getName().getString(),commentInfo);
+            int rewardLevel = commentInfo.level;
             if(rewardLevel == -1) {
                 LZCommonForgeApi.sendSystemMessage(player,"你还没有 MCMOD 评论记录哦，请去 https://play.mcmod.cn/sv20187752.html 评论后联系服主", LZCommonForgeApi.MsgTypes.ALERT.getmFmt());
                 return 0;
             }
             // 判断玩家是否领取过
             RewardTag rewardTag = new RewardTag(player);
-            if(rewardTag.getFlag()) {
-                // 已经获得过
+            int playerLevel = rewardTag.getLevel();
+            if(playerLevel >= rewardLevel) {
+                // 当前等级不大于领取等级
                 LZCommonForgeApi.sendSystemMessage(player, String.format("记录时间： %s，你现在的奖励等级是 : %d 级，距离下个奖励等级还有 %d 天",
                         commentInfo.markTime,
                         commentInfo.level,
@@ -73,21 +89,25 @@ public class RewardCommand {
                 LZCommonForgeApi.sendSystemMessage(player,"你已经领取过了！", LZCommonForgeApi.MsgTypes.ALERT.getmFmt());
                 return 0;
             }
-            //  直接推给玩家
+            //  直接推给玩家，并跳过已经领取的等级
             for(int i = 0; i < rewardLevel+1; i++) {
                 ItemStack item = patternContain.getItem(i).copy();
                 if(item.getItem() != Items.AIR) {
-                    LZCommonForgeApi.giveItem(item, player);
+                    if(playerLevel < i) {
+                        LZCommonForgeApi.giveItem(item, player);
+                    }
                 }
 //                player.addItem(patternContain.getItem(i).copy());
 //                player.drop(patternContain.getItem(i).copy(), false);
             }
 
-            rewardTag.setFlag(true);
+            rewardTag.setLevel(rewardLevel);
+
             LZCommonForgeApi.sendSystemMessage(player, String.format("记录时间： %s，你现在的奖励等级是 : %d 级，距离下个奖励等级还有 %d 天",
                     commentInfo.markTime,
                     commentInfo.level,
                     commentInfo.nextLevelRemainDays), LZCommonForgeApi.MsgTypes.OTHER.getmFmt());
+
             LZCommonForgeApi.sendSystemMessage(player,"have fun!", LZCommonForgeApi.MsgTypes.OTHER.getmFmt());
         }  catch (Exception e) {
             e.printStackTrace();
@@ -101,13 +121,17 @@ public class RewardCommand {
     }
     private static int cb_rewardClear(ServerPlayer target) {
         RewardTag rewardTag = new RewardTag(target);
-        rewardTag.setFlag(false);
+        rewardTag.setLevel(-1);
         LZCommonForgeApi.sendSystemMessage(target,"领取记录已经被清除", LZCommonForgeApi.MsgTypes.OTHER.getmFmt());
         return 0;
     }
     private static int cb_setReward(ServerPlayer player) {
         SimpleContainer container = LZSavedData.getRewardBox();
         LZMenu.openMenu(player, container);
+        return 0;
+    }
+    private static int cb_addRecord(String player, int year, int month, int day) {
+        PlayerCommentTools.addPlayerRecord(player, year, month, day);
         return 0;
     }
     private static int cb_tst(ServerPlayer player) {

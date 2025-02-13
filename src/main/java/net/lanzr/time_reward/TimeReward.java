@@ -3,7 +3,7 @@ package net.lanzr.time_reward;
 import com.mojang.logging.LogUtils;
 import net.lanzr.time_reward.inventory.ContainerTypes;
 import net.lanzr.time_reward.inventory.RewardContainerTypes;
-import net.lanzr.time_reward.inventory.RewardScreen;
+//import net.lanzr.time_reward.inventory.RewardScreen;
 import net.lanzr.time_reward.save.LZSavedData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;

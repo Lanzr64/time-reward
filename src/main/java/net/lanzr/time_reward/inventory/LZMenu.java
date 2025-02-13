@@ -32,19 +32,19 @@ public class LZMenu {
             }
         });
     }
-    static public void openMenutst(ServerPlayer player, Container container) {
-        player.openMenu(new MenuProvider() {
-            @Override
-            public Component getDisplayName() {
-                return Component.literal("评论奖励");
-            }
-            @Override
-            public  AbstractContainerMenu createMenu(int id, Inventory inventory, Player player1) {
-                return RewardMenu_depreacted.createTSTContainer(id,inventory, container);
-//                return ChestMenu.threeRows(id,inventory, container);
-            }
-        });
-    }
+//    static public void openMenutst(ServerPlayer player, Container container) {
+//        player.openMenu(new MenuProvider() {
+//            @Override
+//            public Component getDisplayName() {
+//                return Component.literal("评论奖励");
+//            }
+//            @Override
+//            public  AbstractContainerMenu createMenu(int id, Inventory inventory, Player player1) {
+//                return RewardMenu_depreacted.createTSTContainer(id,inventory, container);
+////                return ChestMenu.threeRows(id,inventory, container);
+//            }
+//        });
+//    }
     static public void tst() {
 
     }

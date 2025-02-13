@@ -8,6 +8,5 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class RewardContainerTypes {
     public static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, TimeReward.MODID);
-    public static final RegistryObject<MenuType<RewardMenu_depreacted>> REWARD_MENU = CONTAINERS.register("reward_menu", () -> new MenuType<>(RewardMenu_depreacted::createTSTContainer));
-
+//    public static final RegistryObject<MenuType<RewardMenu_depreacted>> REWARD_MENU = CONTAINERS.register("reward_menu", () -> new MenuType<>(RewardMenu_depreacted::createTSTContainer));
 }

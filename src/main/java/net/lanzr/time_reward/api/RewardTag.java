@@ -16,13 +16,13 @@ public class RewardTag {
             pTag.put(TimeReward.MODID,mTag);
         }
         if(!mTag.contains(GET_REWARD_ALIAS)) {
-            mTag.putBoolean(GET_REWARD_ALIAS,false);
+            mTag.putInt(GET_REWARD_ALIAS,-1);
         }
     }
-    public boolean getFlag() {
-        return mTag.getBoolean(GET_REWARD_ALIAS);
+    public int getLevel() {
+        return mTag.getInt(GET_REWARD_ALIAS);
     }
-    public void setFlag(boolean flag) {
-        mTag.putBoolean(GET_REWARD_ALIAS,flag);
+    public void setLevel(int rewardLevel) {
+        mTag.putInt(GET_REWARD_ALIAS, rewardLevel);
     }
 }
