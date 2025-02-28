@@ -10,6 +10,7 @@ import net.lanzr.time_reward.inventory.LZMenu;
 import net.lanzr.time_reward.save.LZSavedData;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +29,9 @@ public class RewardCommand {
         literalargumentBuilder.then(Commands.literal("get").executes(ctx -> cb_getreward(ctx.getSource().getPlayer())).requires(ctx -> ctx.hasPermission(0)))
             .then(Commands.literal("set").executes(ctx -> cb_setReward(ctx.getSource().getPlayer())).requires(ctx -> ctx.hasPermission(4)))
             .then(Commands.literal("enable").executes(ctx -> cb_rewardSetDone()).requires(ctx -> ctx.hasPermission(4)))
-            .then(Commands.literal("reset").executes(ctx -> cb_rewardClear(ctx.getSource().getPlayer())).requires(ctx -> ctx.hasPermission(4)))
+            .then(Commands.literal("reset")
+                .then(Commands.argument("target", EntityArgument.player())
+                    .executes(ctx -> cb_rewardClear(EntityArgument.getPlayer(ctx,"target"))).requires(ctx -> ctx.hasPermission(4))))
             .then(Commands.literal("addRecord")
                 .then(Commands.argument("target", StringArgumentType.string())
                     .then(Commands.argument("year", IntegerArgumentType.integer())
@@ -40,7 +43,8 @@ public class RewardCommand {
                                     IntegerArgumentType.getInteger(ctx,"year"),
                                     IntegerArgumentType.getInteger(ctx,"month"),
                                     IntegerArgumentType.getInteger(ctx,"day")
-                                ))))).requires(ctx -> ctx.hasPermission(4))));
+                                ))
+                            )))).requires(ctx -> ctx.hasPermission(4)));
 
         dispatcher.register(literalargumentBuilder);
 //
