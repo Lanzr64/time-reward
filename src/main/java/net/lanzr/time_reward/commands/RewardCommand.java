@@ -1,11 +1,14 @@
 package net.lanzr.time_reward.commands;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.lanzr.time_reward.api.*;
 import net.lanzr.time_reward.inventory.LZMenu;
 import net.lanzr.time_reward.inventory.RewardScreen;
 import net.lanzr.time_reward.inventory.playerRewardContainer;
 import net.lanzr.time_reward.save.LZSavedData;
 import net.lanzr.time_reward.save.PlayerSavedData;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.nbt.CompoundTag;
@@ -21,28 +24,17 @@ import org.jetbrains.annotations.Nullable;
 
 public class RewardCommand {
     public static void register(RegisterCommandsEvent event) {
-        event.getDispatcher().register(
-                Commands.literal("tyj-reward").executes(ctx -> cb_getreward(ctx.getSource().getPlayer()))
-        );
-        event.getDispatcher().register(
-                Commands.literal("tyj-rewardSetDone").executes(ctx -> cb_rewardSetDone(ctx.getSource().getPlayer()))
-                        .requires(ctx-> ctx.hasPermission(4))
-        );
-        event.getDispatcher().register(
-                Commands.literal("tyj-rewardClear")
-                        .then(Commands.argument("target", EntityArgument.player())
-                            .executes(ctx -> cb_rewardClear(EntityArgument.getPlayer(ctx,"target"))))
-                        .requires(ctx-> ctx.hasPermission(4))
-        );
-        event.getDispatcher().register(
-                Commands.literal("tyj-setReward").requires(ctx -> ctx.hasPermission(4))
-                        .executes(ctx -> cb_setReward(ctx.getSource().getPlayer()))
-                        .requires(ctx-> ctx.hasPermission(4))
-        );
-        event.getDispatcher().register(
-                Commands.literal("tyj-tst").requires(ctx -> ctx.hasPermission(4)).
-                        executes(ctx -> cb_tst(ctx.getSource().getPlayer()))
-        );
+
+        CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
+        final LiteralArgumentBuilder<CommandSourceStack> literalargumentBuilder =
+                Commands.literal("tyj-reward");
+
+        literalargumentBuilder.then(Commands.literal("get").executes(ctx -> cb_getreward(ctx.getSource().getPlayer())).requires(ctx -> ctx.hasPermission(0)))
+            .then(Commands.literal("set").executes(ctx -> cb_setReward(ctx.getSource().getPlayer())).requires(ctx -> ctx.hasPermission(4)))
+            .then(Commands.literal("enable").executes(ctx -> cb_rewardSetDone(ctx.getSource().getPlayer())).requires(ctx -> ctx.hasPermission(4)))
+            .then(Commands.literal("reset").executes(ctx -> cb_rewardClear(ctx.getSource().getPlayer())).requires(ctx -> ctx.hasPermission(4)));
+
+        dispatcher.register(literalargumentBuilder);
     }
 
     private static int cb_getreward(@Nullable ServerPlayer player) {
@@ -106,6 +98,7 @@ public class RewardCommand {
         return 0;
     }
     private static int cb_setReward(ServerPlayer player) {
+        System.out.println("setReward");
         SimpleContainer container = LZSavedData.getRewardBox();
         LZMenu.openMenu(player, container);
         return 0;

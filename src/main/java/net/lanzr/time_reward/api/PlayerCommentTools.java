@@ -27,7 +27,7 @@ public class PlayerCommentTools {
                 return -1;
             } else {
                 String timeStr = jo.get(name).getAsString();
-                System.out.println("timeStr: " + timeStr);
+//                System.out.println("timeStr: " + timeStr);
                 String[] parts = timeStr.split("-");
                 LocalDate currentDate = LocalDate.now();
                 int nowYear = currentDate.getYear();

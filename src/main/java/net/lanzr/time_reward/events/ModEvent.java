@@ -18,6 +18,7 @@ public class ModEvent {
         @SubscribeEvent
         public static void CommandRegistration(RegisterCommandsEvent event) {
             RewardCommand.register(event);
+//            NewRewardCommand.register(event);
         }
     }
 
