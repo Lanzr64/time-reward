@@ -1,6 +1,7 @@
 package net.lanzr.time_reward;
 
 import com.mojang.logging.LogUtils;
+import net.lanzr.time_reward.api.PlayerCommentTools;
 import net.lanzr.time_reward.save.LZSavedData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerLevel;
@@ -34,7 +35,6 @@ public class TimeReward
 //        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 //
         MinecraftForge.EVENT_BUS.register(this);
-//
 //        RewardContainerTypes.CONTAINERS.register(modBus);
 
     }
@@ -49,6 +49,7 @@ public class TimeReward
             LZSavedData worldData = world.getDataStorage().computeIfAbsent(LZSavedData::new, LZSavedData::new, LZSavedData.SAVE_DATA_NAME);
             LZSavedData.setInstance(worldData);
         }
+        PlayerCommentTools.init();
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent

@@ -25,27 +25,33 @@ public class RewardCommand {
         CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
         final LiteralArgumentBuilder<CommandSourceStack> literalargumentBuilder =
                 Commands.literal("tyj-reward");
+        final LiteralArgumentBuilder<CommandSourceStack> literalArgumentBuilder_sub_admin =
+                Commands.literal("admin")
+                    .requires(ctx -> ctx.hasPermission(4));
 
-        literalargumentBuilder.then(Commands.literal("get").executes(ctx -> cb_getreward(ctx.getSource().getPlayer())).requires(ctx -> ctx.hasPermission(0)))
-            .then(Commands.literal("set").executes(ctx -> cb_setReward(ctx.getSource().getPlayer())).requires(ctx -> ctx.hasPermission(4)))
-            .then(Commands.literal("enable").executes(ctx -> cb_rewardSetDone()).requires(ctx -> ctx.hasPermission(4)))
-            .then(Commands.literal("reset")
-                .then(Commands.argument("target", EntityArgument.player())
-                    .executes(ctx -> cb_rewardClear(EntityArgument.getPlayer(ctx,"target"))).requires(ctx -> ctx.hasPermission(4))))
-            .then(Commands.literal("addRecord")
-                .then(Commands.argument("target", StringArgumentType.string())
-                    .then(Commands.argument("year", IntegerArgumentType.integer())
-                        .then(Commands.argument("month", IntegerArgumentType.integer())
-                            .then(Commands.argument("day", IntegerArgumentType.integer())
-                                .executes(ctx -> cb_addRecord(
-                                    ctx.getSource().getPlayer(),
-                                    StringArgumentType.getString(ctx,"target"),
-                                    IntegerArgumentType.getInteger(ctx,"year"),
-                                    IntegerArgumentType.getInteger(ctx,"month"),
-                                    IntegerArgumentType.getInteger(ctx,"day")
-                                ))
-                            )))).requires(ctx -> ctx.hasPermission(4)));
+        literalargumentBuilder
+            .then(Commands.literal("get").executes(ctx -> cb_getreward(ctx.getSource().getPlayer())));
 
+        literalArgumentBuilder_sub_admin
+                .then(Commands.literal("set").executes(ctx -> cb_setReward(ctx.getSource().getPlayer())))
+                .then(Commands.literal("enable").executes(ctx -> cb_rewardSetDone(ctx.getSource().getPlayer())))
+                .then(Commands.literal("reset")
+                        .then(Commands.argument("target", EntityArgument.player())
+                                .executes(ctx -> cb_rewardClear(EntityArgument.getPlayer(ctx,"target")))))
+                .then(Commands.literal("addRecord")
+                        .then(Commands.argument("target", StringArgumentType.string())
+                                .then(Commands.argument("year", IntegerArgumentType.integer())
+                                        .then(Commands.argument("month", IntegerArgumentType.integer())
+                                                .then(Commands.argument("day", IntegerArgumentType.integer())
+                                                        .executes(ctx -> cb_addRecord(
+                                                                ctx.getSource().getPlayer(),
+                                                                StringArgumentType.getString(ctx,"target"),
+                                                                IntegerArgumentType.getInteger(ctx,"year"),
+                                                                IntegerArgumentType.getInteger(ctx,"month"),
+                                                                IntegerArgumentType.getInteger(ctx,"day")
+                                                        ))
+                                                )))));
+        literalargumentBuilder.then(literalArgumentBuilder_sub_admin);
         dispatcher.register(literalargumentBuilder);
 //
 //        event.getDispatcher().register(
@@ -100,12 +106,14 @@ public class RewardCommand {
             }
             // 判断玩家是否有领取权限
             CommentInfo commentInfo = new CommentInfo();
-            PlayerCommentTools.getPlayerComment(player.getName().getString(),commentInfo);
+            int haveReward = PlayerCommentTools.getPlayerComment(player.getName().getString(),commentInfo);
             int rewardLevel = commentInfo.level;
-            if(rewardLevel == -1) {
+            System.out.println(" reward level is " + rewardLevel);
+            if(haveReward == -1) {
                 LZCommonForgeApi.sendSystemMessage(player,"你还没有 MCMOD 评论记录哦，请去 https://play.mcmod.cn/sv20187752.html 评论后联系服主", LZCommonForgeApi.MsgTypes.ALERT.getmFmt());
                 return 0;
             }
+
             // 判断玩家是否领取过
             RewardTag rewardTag = new RewardTag(player);
             int playerLevel = rewardTag.getLevel();
@@ -147,8 +155,9 @@ public class RewardCommand {
 
         return 1;
     }
-    private static int cb_rewardSetDone() {
+    private static int cb_rewardSetDone(ServerPlayer player) {
         LZSavedData.setDone(true);
+        LZCommonForgeApi.sendCenterSystemMessage(player,"奖励核心已就绪", LZCommonForgeApi.MsgTypes.OTHER.getmFmt());
         return 0;
     }
     private static int cb_rewardClear(ServerPlayer target) {
