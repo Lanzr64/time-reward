@@ -58,13 +58,13 @@ public class LZCommonForgeApi {
                         itementity1.makeFakeItem();
                     }
 
-                    serverplayer.level().playSound((Player)null, serverplayer.getX(), serverplayer.getY(), serverplayer.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((serverplayer.getRandom().nextFloat() - serverplayer.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+                    serverplayer.level.playSound((Player)null, serverplayer.getX(), serverplayer.getY(), serverplayer.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((serverplayer.getRandom().nextFloat() - serverplayer.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
                     serverplayer.containerMenu.broadcastChanges();
                 } else {
                     ItemEntity itementity = serverplayer.drop(itemstack, false);
                     if (itementity != null) {
                         itementity.setNoPickUpDelay();
-                        itementity.setTarget(serverplayer.getUUID());
+                        itementity.setOwner(serverplayer.getUUID());
                     }
                 }
             }
