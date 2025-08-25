@@ -34,7 +34,7 @@ public class RewardCommand {
         final LiteralArgumentBuilder<CommandSourceStack> literalArgumentBuilder_sub_admin =
                 Commands.literal("admin")
                         .requires(ctx -> ctx.hasPermission(4));
-
+        literalargumentBuilder.executes(ctx -> cb_showURL(ctx.getSource().getPlayer()));
         literalargumentBuilder
                 .then(Commands.literal("get").executes(ctx -> cb_getreward(ctx.getSource().getPlayer())));
 
@@ -63,7 +63,16 @@ public class RewardCommand {
                     .executes(ctx -> cb_tst(ctx.getSource()
                         )));
     }
-
+    private static int cb_showURL(@Nullable ServerPlayer player) {
+        MutableComponent message = Component.literal("没事就应该多评论评论服务器！");
+        message = message.append(Component.literal("[点击打开 MCMOD服务器页面]")
+                .withStyle(style -> style.withColor(LZCommonForgeApi.MsgTypes.OTHER.getmFmt())
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://play.mcmod.cn/sv20187752.html"))));
+        if (player != null) {
+            player.sendSystemMessage(message);
+        }
+        return 0;
+    }
     private static int cb_tst(CommandSourceStack source) {
         ItemStack item = new ItemStack(Items.LAVA_BUCKET);
 
@@ -87,7 +96,11 @@ public class RewardCommand {
             int rewardLevel = commentInfo.level;
             System.out.println(" reward level is " + rewardLevel);
             if(haveReward == -1) {
-                LZCommonForgeApi.sendSystemMessage(player,"你还没有 MCMOD 评论记录哦，请去 https://play.mcmod.cn/sv20187752.html 评论后联系服主", LZCommonForgeApi.MsgTypes.ALERT.getmFmt());
+                MutableComponent message = Component.literal("你还没有 MCMOD 评论记录哦，请去MCMOD 服务器页面评论后联系服主");
+                message = message.append(Component.literal("[点击打开 MCMOD服务器页面]")
+                        .withStyle(style -> style.withColor(LZCommonForgeApi.MsgTypes.OTHER.getmFmt())
+                                .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://play.mcmod.cn/sv20187752.html"))));
+                player.sendSystemMessage(message);
                 return 0;
             }
 
