@@ -4,13 +4,19 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.lanzr.time_reward.TimeReward;
 import net.lanzr.time_reward.api.*;
 import net.lanzr.time_reward.inventory.LZMenu;
 import net.lanzr.time_reward.save.LZSavedData;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
@@ -34,7 +40,7 @@ public class RewardCommand {
 
         literalArgumentBuilder_sub_admin
                 .then(Commands.literal("set").executes(ctx -> cb_setReward(ctx.getSource().getPlayer())))
-                .then(Commands.literal("enable").executes(ctx -> cb_rewardSetDone(ctx.getSource().getPlayer())))
+                .then(Commands.literal("enable").executes(ctx -> cb_rewardSetDone(ctx.getSource().getServer())))
                 .then(Commands.literal("reset")
                         .then(Commands.argument("target", EntityArgument.player())
                                 .executes(ctx -> cb_rewardClear(EntityArgument.getPlayer(ctx,"target")))))
@@ -44,7 +50,7 @@ public class RewardCommand {
                                         .then(Commands.argument("month", IntegerArgumentType.integer())
                                                 .then(Commands.argument("day", IntegerArgumentType.integer())
                                                         .executes(ctx -> cb_addRecord(
-                                                                ctx.getSource().getPlayer(),
+                                                                ctx.getSource(),
                                                                 StringArgumentType.getString(ctx,"target"),
                                                                 IntegerArgumentType.getInteger(ctx,"year"),
                                                                 IntegerArgumentType.getInteger(ctx,"month"),
@@ -53,6 +59,15 @@ public class RewardCommand {
                                                 )))));
         literalargumentBuilder.then(literalArgumentBuilder_sub_admin);
         dispatcher.register(literalargumentBuilder);
+        dispatcher.register(Commands.literal("tst")
+                    .executes(ctx -> cb_tst(ctx.getSource()
+                        )));
+    }
+
+    private static int cb_tst(CommandSourceStack source) {
+        ItemStack item = new ItemStack(Items.LAVA_BUCKET);
+
+        return 0;
     }
 
     private static int cb_getreward(@Nullable ServerPlayer player) {
@@ -117,9 +132,15 @@ public class RewardCommand {
 
         return 1;
     }
-    private static int cb_rewardSetDone(ServerPlayer player) {
+    private static int cb_rewardSetDone(MinecraftServer server) {
         LZSavedData.setDone(true);
-        LZCommonForgeApi.sendCenterSystemMessage(player,"奖励核心已就绪", LZCommonForgeApi.MsgTypes.OTHER.getmFmt());
+        server.getPlayerList().getPlayers().forEach(player ->{
+            MutableComponent message = Component.literal("评论奖励已经设置，可以使用命令/tyj-reward get获取奖励了~。");
+            message = message.append(Component.literal("[领取奖励点我]")
+                    .withStyle(style -> style.withColor(ChatFormatting.GREEN)
+                            .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tyj-reward get"))));
+            player.sendSystemMessage(message);
+        });
         return 0;
     }
     private static int cb_rewardClear(ServerPlayer target) {
@@ -133,11 +154,14 @@ public class RewardCommand {
         LZMenu.openMenu(player, container);
         return 0;
     }
-    private static int cb_addRecord(ServerPlayer player,String targetName, int year, int month, int day) {
+    private static int cb_addRecord(CommandSourceStack src, String targetName, int year, int month, int day) throws CommandSyntaxException {
         month = Math.min(Math.max(month, 1), 12);
         day = Math.min(Math.max(day, 1), 31);
         String msg = String.format("记录：%s : %d-%d-%d",targetName,year,month,day);
-        LZCommonForgeApi.sendCenterSystemMessage(player,msg,LZCommonForgeApi.MsgTypes.OTHER.getmFmt());
+        if(src.isPlayer()){
+            ServerPlayer player = src.getPlayerOrException();
+            LZCommonForgeApi.sendCenterSystemMessage(player,msg,LZCommonForgeApi.MsgTypes.OTHER.getmFmt());
+        }
         PlayerCommentTools.addPlayerRecord(targetName, year, month, day);
         return 0;
     }

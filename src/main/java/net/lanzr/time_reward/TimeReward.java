@@ -1,12 +1,20 @@
 package net.lanzr.time_reward;
 import net.lanzr.time_reward.api.PlayerCommentTools;
+import net.lanzr.time_reward.api.RewardTag;
 import net.lanzr.time_reward.save.LZSavedData;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import org.slf4j.Logger;
 
@@ -25,9 +33,7 @@ public class TimeReward
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public TimeReward(IEventBus modEventBus, ModContainer modContainer)    {
-
         NeoForge.EVENT_BUS.register(this);
-
     }
 
     @SubscribeEvent
@@ -40,5 +46,20 @@ public class TimeReward
         }
         PlayerCommentTools.init();
     }
+    @SubscribeEvent
+    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        ServerPlayer player = (ServerPlayer) event.getEntity();
+        if(LZSavedData.SET_DONE) {
+            RewardTag rewardTag = new RewardTag(player);
+            int playerLevel = rewardTag.getLevel();
+            if(playerLevel < 0 ) {
+                MutableComponent message = Component.literal("评论奖励已经设置，可以使用命令/tyj-reward get获取奖励了~。");
+                message = message.append(Component.literal("[领取奖励点我]")
+                        .withStyle(style -> style.withColor(ChatFormatting.GREEN)
+                                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tyj-reward get"))));
+                player.sendSystemMessage(message);
+            }
+        }
 
+    }
 }
