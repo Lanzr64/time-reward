@@ -49,7 +49,7 @@ public class PlayerCommentTools {
                 e.printStackTrace(); // 打印更详细的错误信息
             }
         } else {
-            System.out.println("文件已存在！");
+            System.out.println("记录文件已存在！");
         }
     }
     public static int getPlayerComment(String name, CommentInfo commentInfo) {

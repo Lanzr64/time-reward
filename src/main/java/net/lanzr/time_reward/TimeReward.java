@@ -2,12 +2,19 @@ package net.lanzr.time_reward;
 
 import com.mojang.logging.LogUtils;
 import net.lanzr.time_reward.api.PlayerCommentTools;
+import net.lanzr.time_reward.api.RewardTag;
 import net.lanzr.time_reward.save.LZSavedData;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.IExtensionPoint;
@@ -31,15 +38,8 @@ public class TimeReward
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () ->
                 new IExtensionPoint.DisplayTest(() ->
                         NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
-//
-//        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-//
         MinecraftForge.EVENT_BUS.register(this);
-//        RewardContainerTypes.CONTAINERS.register(modBus);
-
     }
-
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
 
     @SubscribeEvent
     public void onServerStarted(ServerStartedEvent event) {
@@ -52,16 +52,20 @@ public class TimeReward
         PlayerCommentTools.init();
     }
 
-    // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
-    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class ClientModEvents
-    {
-        @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event)
-        {
-            // Some client setup code
-            LOGGER.info("HELLO FROM CLIENT SETUP");
-            LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+    @SubscribeEvent
+    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        ServerPlayer player = (ServerPlayer) event.getEntity();
+        if(LZSavedData.SET_DONE) {
+            RewardTag rewardTag = new RewardTag(player);
+            int playerLevel = rewardTag.getLevel();
+            if(playerLevel < 0 ) {
+                MutableComponent message = Component.literal("评论奖励已经设置，可以使用命令/tyj-reward get获取奖励了~。");
+                message = message.append(Component.literal("[领取奖励点我]")
+                        .withStyle(style -> style.withColor(ChatFormatting.GREEN)
+                                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tyj-reward get"))));
+                player.sendSystemMessage(message);
+            }
         }
+
     }
 }
