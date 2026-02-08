@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.lanzr.time_reward.TimeReward;
 import net.lanzr.time_reward.api.*;
 import net.lanzr.time_reward.inventory.LZMenu;
@@ -11,6 +12,9 @@ import net.lanzr.time_reward.save.LZSavedData;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
@@ -29,8 +33,10 @@ public class RewardCommand {
                 Commands.literal("admin")
                     .requires(ctx -> ctx.hasPermission(4));
 
+
+        literalargumentBuilder.executes(ctx -> cb_showURL(ctx.getSource().getPlayer()));
         literalargumentBuilder
-            .then(Commands.literal("get").executes(ctx -> cb_getreward(ctx.getSource().getPlayer())));
+                .then(Commands.literal("get").executes(ctx -> cb_getreward(ctx.getSource().getPlayer())));
 
         literalArgumentBuilder_sub_admin
                 .then(Commands.literal("set").executes(ctx -> cb_setReward(ctx.getSource().getPlayer())))
@@ -44,7 +50,7 @@ public class RewardCommand {
                                         .then(Commands.argument("month", IntegerArgumentType.integer())
                                                 .then(Commands.argument("day", IntegerArgumentType.integer())
                                                         .executes(ctx -> cb_addRecord(
-                                                                ctx.getSource().getPlayer(),
+                                                                ctx.getSource(),
                                                                 StringArgumentType.getString(ctx,"target"),
                                                                 IntegerArgumentType.getInteger(ctx,"year"),
                                                                 IntegerArgumentType.getInteger(ctx,"month"),
@@ -92,7 +98,17 @@ public class RewardCommand {
 //                        executes(ctx -> cb_tst(ctx.getSource().getPlayer()))
 //        );
     }
-
+    private static int cb_showURL(@Nullable ServerPlayer player) {
+        MutableComponent message = Component.literal("没事就应该多评论评论服务器！");
+        message = message.append(Component.literal("[点击打开 MCMOD服务器页面]")
+                .withStyle(style -> style.withColor(LZCommonForgeApi.MsgTypes.OTHER.getmFmt())
+                        .withClickEvent(
+                                new ClickEvent(ClickEvent.Action.OPEN_URL, "https://play.mcmod.cn/sv20187752.html"))));
+        if (player != null) {
+            player.sendSystemMessage(message);
+        }
+        return 0;
+    }
     private static int cb_getreward(@Nullable ServerPlayer player) {
         if(player==null) {
             return 0;
@@ -171,11 +187,16 @@ public class RewardCommand {
         LZMenu.openMenu(player, container);
         return 0;
     }
-    private static int cb_addRecord(ServerPlayer player,String targetName, int year, int month, int day) {
+
+    private static int cb_addRecord(CommandSourceStack src, String targetName, int year, int month, int day)
+            throws CommandSyntaxException {
         month = Math.min(Math.max(month, 1), 12);
         day = Math.min(Math.max(day, 1), 31);
-        String msg = String.format("记录：%s : %d-%d-%d",targetName,year,month,day);
-        LZCommonForgeApi.sendCenterSystemMessage(player,msg,LZCommonForgeApi.MsgTypes.OTHER.getmFmt());
+        String msg = String.format("记录：%s : %d-%d-%d", targetName, year, month, day);
+        if (src.isPlayer()) {
+            ServerPlayer player = src.getPlayerOrException();
+            LZCommonForgeApi.sendCenterSystemMessage(player, msg, LZCommonForgeApi.MsgTypes.OTHER.getmFmt());
+        }
         PlayerCommentTools.addPlayerRecord(targetName, year, month, day);
         return 0;
     }
