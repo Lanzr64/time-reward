@@ -26,18 +26,15 @@ import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(TimeReward.MODID)
-public class TimeReward
-{
+public class TimeReward {
     // Define mod id in a common place for everything to reference
     public static final String MODID = "time_reward";
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public TimeReward()
-    {
-        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () ->
-                new IExtensionPoint.DisplayTest(() ->
-                        NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+    public TimeReward() {
+        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
+                () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -46,7 +43,8 @@ public class TimeReward
         ServerLevel world = event.getServer().getLevel(Level.OVERWORLD);
         assert world != null;
         if (!world.isClientSide) {
-            LZSavedData worldData = world.getDataStorage().computeIfAbsent(LZSavedData::new, LZSavedData::new, LZSavedData.SAVE_DATA_NAME);
+            LZSavedData worldData = world.getDataStorage().computeIfAbsent(LZSavedData::new, LZSavedData::new,
+                    LZSavedData.SAVE_DATA_NAME);
             LZSavedData.setInstance(worldData);
         }
         PlayerCommentTools.init();
@@ -55,10 +53,10 @@ public class TimeReward
     @SubscribeEvent
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         ServerPlayer player = (ServerPlayer) event.getEntity();
-        if(LZSavedData.SET_DONE) {
+        if (LZSavedData.SET_DONE) {
             RewardTag rewardTag = new RewardTag(player);
             int playerLevel = rewardTag.getLevel();
-            if(playerLevel < 0 ) {
+            if (playerLevel < 0) {
                 MutableComponent message = Component.literal("评论奖励已经设置，可以使用命令/tyj-reward get获取奖励了~。");
                 message = message.append(Component.literal("[领取奖励点我]")
                         .withStyle(style -> style.withColor(ChatFormatting.GREEN)

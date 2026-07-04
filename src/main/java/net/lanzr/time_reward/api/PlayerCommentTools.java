@@ -12,7 +12,7 @@ import java.time.LocalDate;
 public class PlayerCommentTools {
     static final String PATH = "lzFiles";
     static final String COMMENT_RECORD_PATH = PATH + "/comment-record.json";
-    static final int[] COMMENT_LEVEL = {1,3,6,12,24};
+    static final int[] COMMENT_LEVEL = {1,3,6,12,24,36,48};
     private static final Object FILE_LOCK = new Object();
 
     public static void init() {
