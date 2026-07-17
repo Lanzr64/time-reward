@@ -11,7 +11,6 @@ import java.time.LocalDate;
 public class PlayerCommentTools {
     static final String PATH = "lzFiles";
     static final String COMMENT_RECORD_PATH = PATH + "/comment-record.json";
-    static final int[] COMMENT_LEVEL = {1,3,6,12,24,36,48};
     private static final Object FILE_LOCK = new Object();
 
     public static void init() {
@@ -104,22 +103,10 @@ public class PlayerCommentTools {
                 + (nowDay - Integer.parseInt(parts[2]));
 
         int allMonth = playerDays / 30;
-        int nextMonth =  0;
-        int rewardLevel = 0;
-        for (int i = 0; i < COMMENT_LEVEL.length; i++) {
-            if(allMonth < COMMENT_LEVEL[i]) {
-                nextMonth = COMMENT_LEVEL[i];
-                break;
-            }
-            rewardLevel++;
-        }
-        commentInfo.level = rewardLevel;
+        commentInfo.level = allMonth;
         commentInfo.markTime = timeStr;
-        if(nextMonth!=0) {
-            commentInfo.nextLevelRemainDays = nextMonth * 30 - playerDays;
-        } else {
-            commentInfo.nextLevelRemainDays = 0;
-        }
+        int remainder = playerDays % 30;
+        commentInfo.nextLevelRemainDays = (remainder == 0) ? 30 : 30 - remainder;
         return 0;
     }
 }

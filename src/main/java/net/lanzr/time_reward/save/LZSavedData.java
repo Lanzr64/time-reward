@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 public class LZSavedData extends SavedData {
     @Nullable
     public static LZSavedData INSTANCE;
-    public static final int CONTAINER_SIZE = 27;
+    public static final int CONTAINER_SIZE = 900;
     public static final String SAVE_DATA_NAME = "timeReward-SavedData";
     private static final String TAG_ITEMS = "Items";
     private static final String TAG_NAME_RECORD = "Records";

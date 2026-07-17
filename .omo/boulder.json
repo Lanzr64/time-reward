@@ -1,0 +1,113 @@
+{
+  "schema_version": 2,
+  "active_work_id": "reward-system-refactor-c96b4daa",
+  "works": {
+    "reward-system-refactor-c96b4daa": {
+      "work_id": "reward-system-refactor-c96b4daa",
+      "active_plan": "D:\\lz_workplace\\java\\lzProject\\time-reward\\1.21\\.omo\\plans\\reward-system-refactor.md",
+      "plan_name": "reward-system-refactor",
+      "status": "active",
+      "started_at": "2026-07-17T08:15:34.669Z",
+      "updated_at": "2026-07-17T08:29:56.361Z",
+      "session_ids": [
+        "opencode:ses_090ec7477ffeOFhwRgI5NSgN58"
+      ],
+      "session_origins": {
+        "opencode:ses_090ec7477ffeOFhwRgI5NSgN58": "direct"
+      },
+      "agent": "atlas",
+      "task_sessions": {
+        "todo:1": {
+          "task_key": "todo:1",
+          "task_label": "1",
+          "task_title": "FixedSlot - 修正包声明",
+          "session_id": "opencode:ses_090da4e88ffeuXXMRr4pM251ho",
+          "agent": "Sisyphus-Junior",
+          "category": "quick",
+          "updated_at": "2026-07-17T08:19:09.002Z",
+          "started_at": "2026-07-17T08:16:29.963Z",
+          "status": "completed",
+          "ended_at": "2026-07-17T08:19:09.002Z",
+          "elapsed_ms": 159039
+        },
+        "todo:5": {
+          "task_key": "todo:5",
+          "task_label": "5",
+          "task_title": "PlayerRewardManager - 创建玩家个人库存管理器（新文件）",
+          "session_id": "opencode:ses_090d6de76ffePCpJ554bzLczci",
+          "agent": "Sisyphus-Junior",
+          "started_at": "2026-07-17T08:22:15.301Z",
+          "status": "completed",
+          "updated_at": "2026-07-17T08:24:34.658Z",
+          "ended_at": "2026-07-17T08:24:34.658Z",
+          "elapsed_ms": 139357
+        },
+        "todo:6": {
+          "task_key": "todo:6",
+          "task_label": "6",
+          "task_title": "RewardCommand - 重写 admin set 和 player get 命令",
+          "session_id": "opencode:ses_090d20e5effecCdqc8U4HMeKxd",
+          "agent": "Sisyphus-Junior",
+          "category": "unspecified-high",
+          "updated_at": "2026-07-17T08:29:56.361Z",
+          "started_at": "2026-07-17T08:29:26.003Z",
+          "status": "completed",
+          "ended_at": "2026-07-17T08:29:56.361Z",
+          "elapsed_ms": 30358
+        }
+      }
+    }
+  },
+  "active_plan": "D:\\lz_workplace\\java\\lzProject\\time-reward\\1.21\\.omo\\plans\\reward-system-refactor.md",
+  "started_at": "2026-07-17T08:15:34.669Z",
+  "status": "active",
+  "updated_at": "2026-07-17T08:29:56.361Z",
+  "session_ids": [
+    "opencode:ses_090ec7477ffeOFhwRgI5NSgN58"
+  ],
+  "session_origins": {
+    "opencode:ses_090ec7477ffeOFhwRgI5NSgN58": "direct"
+  },
+  "plan_name": "reward-system-refactor",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "FixedSlot - 修正包声明",
+      "session_id": "opencode:ses_090da4e88ffeuXXMRr4pM251ho",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-07-17T08:19:09.002Z",
+      "started_at": "2026-07-17T08:16:29.963Z",
+      "status": "completed",
+      "ended_at": "2026-07-17T08:19:09.002Z",
+      "elapsed_ms": 159039
+    },
+    "todo:5": {
+      "task_key": "todo:5",
+      "task_label": "5",
+      "task_title": "PlayerRewardManager - 创建玩家个人库存管理器（新文件）",
+      "session_id": "opencode:ses_090d6de76ffePCpJ554bzLczci",
+      "agent": "Sisyphus-Junior",
+      "started_at": "2026-07-17T08:22:15.301Z",
+      "status": "completed",
+      "updated_at": "2026-07-17T08:24:34.658Z",
+      "ended_at": "2026-07-17T08:24:34.658Z",
+      "elapsed_ms": 139357
+    },
+    "todo:6": {
+      "task_key": "todo:6",
+      "task_label": "6",
+      "task_title": "RewardCommand - 重写 admin set 和 player get 命令",
+      "session_id": "opencode:ses_090d20e5effecCdqc8U4HMeKxd",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-07-17T08:29:56.361Z",
+      "started_at": "2026-07-17T08:29:26.003Z",
+      "status": "completed",
+      "ended_at": "2026-07-17T08:29:56.361Z",
+      "elapsed_ms": 30358
+    }
+  },
+  "agent": "atlas"
+}
