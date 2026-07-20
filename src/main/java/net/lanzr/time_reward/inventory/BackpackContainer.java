@@ -56,15 +56,15 @@ public class BackpackContainer extends AbstractContainerMenu {
     /** Number of columns in the scrollable grid. */
     public static final int COLS = 12;
     /** Number of visible rows in the scrollable grid. */
-    public static final int VISIBLE_ROWS = 4;
-    /** Total display slots (12 × 4 = 48). */
-    public static final int TOTAL_DISPLAY_SLOTS = COLS * VISIBLE_ROWS;
+    public static final int MAX_VISIBLE_ROWS = 12;
+    /** Total display slots (12 × MAX_VISIBLE_ROWS). */
+    public static final int TOTAL_DISPLAY_SLOTS = COLS * MAX_VISIBLE_ROWS;
     /** First player-inventory slot index. */
-    public static final int PLAYER_INV_START = TOTAL_DISPLAY_SLOTS;        // 48
+    public static final int PLAYER_INV_START = TOTAL_DISPLAY_SLOTS;        // 144
     /** First hotbar slot index. */
-    public static final int HOTBAR_START = PLAYER_INV_START + 27;          // 75
+    public static final int HOTBAR_START = PLAYER_INV_START + 27;          // 171
     /** Total number of slots in this menu. */
-    public static final int TOTAL_SLOTS = HOTBAR_START + 9;                // 84
+    public static final int TOTAL_SLOTS = HOTBAR_START + 9;                // 180
 
     // ========== Fields ==========
 
@@ -122,7 +122,7 @@ public class BackpackContainer extends AbstractContainerMenu {
      */
     private void setupSlots(Inventory playerInventory) {
         // ---- Scrollable display grid ----
-        for (int row = 0; row < VISIBLE_ROWS; row++) {
+        for (int row = 0; row < MAX_VISIBLE_ROWS; row++) {
             for (int col = 0; col < COLS; col++) {
                 int displayIndex = row * COLS + col;
                 addSlot(new DynamicScrollSlot(
@@ -134,7 +134,7 @@ public class BackpackContainer extends AbstractContainerMenu {
 
         // ---- Player inventory (3 rows × 9 cols) ----
         int playerInvX = 8 + 30; // 8 + PLAYER_INV_X_OFFSET for WIDER_12_SLOT layout
-        int playerInvY = 18 + VISIBLE_ROWS * 18 + 14;
+        int playerInvY = 18 + MAX_VISIBLE_ROWS * 18 + 14;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 addSlot(new Slot(playerInventory, 9 + col + row * 9,
@@ -191,7 +191,7 @@ public class BackpackContainer extends AbstractContainerMenu {
      */
     public int getMaxScrollOffset() {
         int totalRows = (storageContainer.getContainerSize() + COLS - 1) / COLS;
-        return Math.max(0, totalRows - VISIBLE_ROWS);
+        return Math.max(0, totalRows - MAX_VISIBLE_ROWS);
     }
 
     private int clampScrollOffset(int offset) {

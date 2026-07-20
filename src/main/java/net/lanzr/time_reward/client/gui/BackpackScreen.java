@@ -49,7 +49,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
     private static final int PLAYER_INV_X_OFFSET          = 30;
 
     private static final int COLS         = BackpackContainer.COLS;
-    private static final int VISIBLE_ROWS = BackpackContainer.VISIBLE_ROWS;
+
     private static final int TOTAL_DISPLAY_SLOTS = BackpackContainer.TOTAL_DISPLAY_SLOTS;
 
     /** X value assigned to slots that fail the search filter (hidden off-screen left). */
@@ -84,13 +84,19 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
     /** Number of storage slots matching both viewport and filter. */
     private int visibleSlotsCount;
 
+    /** Number of currently visible rows, calculated from screen height. */
+    private int visibleRows;
+
     // ======================== Constructor ========================
 
     public BackpackScreen(BackpackContainer menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
 
+        int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+        this.visibleRows = Math.max(4, Math.min(BackpackContainer.MAX_VISIBLE_ROWS, (screenHeight - HEIGHT_WITHOUT_STORAGE_SLOTS) / 18));
+
         this.imageWidth  = COLS * SLOT_SIZE + 2 * SLOTS_X_OFFSET + 6;  // 12*18+14+6 = 236
-        this.imageHeight = HEIGHT_WITHOUT_STORAGE_SLOTS + VISIBLE_ROWS * SLOT_SIZE; // 114+72 = 186
+        this.imageHeight = HEIGHT_WITHOUT_STORAGE_SLOTS + visibleRows * SLOT_SIZE;
 
         this.titleLabelX      = SLOTS_X_OFFSET;
         this.titleLabelY      = 6;
@@ -116,8 +122,8 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
             removeWidget(scrollPanel);
         }
 
-        int panelWidth  = COLS * SLOT_SIZE;
-        int panelHeight = VISIBLE_ROWS * SLOT_SIZE;
+        int panelWidth  = COLS * SLOT_SIZE + 6;
+        int panelHeight = visibleRows * SLOT_SIZE;
         int panelTop    = topPos + SLOTS_Y_OFFSET;
         int panelLeft   = leftPos + SLOTS_X_OFFSET;
 
@@ -296,7 +302,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
      * Uses the same chunked blit pattern as SophisticatedCore's GuiHelper.renderSlotsBackground.
      */
     private void renderSlotCellBackgrounds(GuiGraphics guiGraphics) {
-        int slotRows = VISIBLE_ROWS; // 4
+        int slotRows = visibleRows;
         int renderedY = 0;
         final int MAX_ROWS_PER_BLIT = 12;
 
@@ -310,6 +316,19 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
                 0, 0, chunkWidth, chunkHeight, TEXTURE_SIZE, TEXTURE_SIZE);
             renderedY += chunkRows;
         }
+    }
+
+    // ======================== Resize Handling ========================
+
+    @Override
+    public void resize(Minecraft minecraft, int width, int height) {
+        int newVisibleRows = Math.max(4, Math.min(BackpackContainer.MAX_VISIBLE_ROWS, (height - HEIGHT_WITHOUT_STORAGE_SLOTS) / 18));
+        this.visibleRows = newVisibleRows;
+        this.imageHeight = HEIGHT_WITHOUT_STORAGE_SLOTS + visibleRows * SLOT_SIZE;
+        this.inventoryLabelY = imageHeight - 94;
+        super.resize(minecraft, width, height);
+        initScrollPanel();
+        updateSlotsPosition();
     }
 
     // ======================== Main Render ========================
@@ -403,7 +422,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
     private class BackpackScrollPanel extends ScrollPanel {
 
         BackpackScrollPanel(Minecraft client, int width, int height, int top, int left) {
-            super(client, width, height, top, left);
+            super(client, width, height, top, left, 0);
         }
 
         @Override
@@ -498,7 +517,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
                     // Hide filtered-out items far off-screen to the left
                     slot.x = DISABLED_SLOT_X;
                     slot.y = HIDDEN_SLOT_Y;
-                } else if (newY < SLOTS_Y_OFFSET || newY > SLOTS_Y_OFFSET + VISIBLE_ROWS * SLOT_SIZE) {
+                } else if (newY < SLOTS_Y_OFFSET || newY >= SLOTS_Y_OFFSET + visibleRows * SLOT_SIZE) {
                     // Scrolled out of the visible viewport — hide vertically
                     slot.y = HIDDEN_SLOT_Y;
                     slot.x = SLOTS_X_OFFSET + col * SLOT_SIZE;
