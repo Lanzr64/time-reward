@@ -1,0 +1,513 @@
+package net.lanzr.time_reward.client.gui;
+
+import com.mojang.blaze3d.vertex.Tesselator;
+import net.lanzr.time_reward.inventory.BackpackContainer;
+import net.lanzr.time_reward.network.ScrollChangePayload;
+import net.lanzr.time_reward.network.SortPayload;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.client.gui.widget.ScrollPanel;
+import net.neoforged.neoforge.network.PacketDistributor;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+/**
+ * Client-side backpack GUI screen with scrollable grid, search box, and sort buttons.
+ *
+ * <p>Renders a 12-column scrollable grid of inventory slots backed by
+ * {@link net.lanzr.time_reward.inventory.DynamicScrollSlot}s. The background uses
+ * a custom texture in three sections: header, tileable slot area, and player inventory
+ * footer. Scrolling is handled by a NeoForge {@link ScrollPanel} that adjusts slot
+ * Y-positions. A search box and sort button sit in the header.</p>
+ */
+public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
+
+    // ======================== Constants ========================
+
+    private static final ResourceLocation BG_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath("time_reward", "textures/gui/storage_background_12_wider.png");
+    private static final ResourceLocation SLOTS_BG =
+            ResourceLocation.fromNamespaceAndPath("time_reward", "textures/gui/slots_background.png");
+
+    private static final int SLOTS_X_OFFSET               = 7;
+    private static final int SLOTS_Y_OFFSET               = 17;
+    private static final int SLOT_SIZE                    = 18;
+    private static final int TEXTURE_SIZE                 = 256;
+    private static final int HEIGHT_WITHOUT_STORAGE_SLOTS = 114;
+    private static final int PLAYER_INV_X_OFFSET          = 30;
+
+    private static final int COLS         = BackpackContainer.COLS;
+    private static final int VISIBLE_ROWS = BackpackContainer.VISIBLE_ROWS;
+    private static final int TOTAL_DISPLAY_SLOTS = BackpackContainer.TOTAL_DISPLAY_SLOTS;
+
+    /** X value assigned to slots that fail the search filter (hidden off-screen left). */
+    private static final int DISABLED_SLOT_X = -2000;
+    /** Y value assigned to slots scrolled out of the viewport (hidden off-screen upward). */
+    private static final int HIDDEN_SLOT_Y   = -2000;
+
+    // ======================== Sort Mode ========================
+
+    public enum SortBy {
+        NAME, COUNT, MOD;
+
+        public SortBy next() {
+            return switch (this) {
+                case NAME  -> COUNT;
+                case COUNT -> MOD;
+                case MOD   -> NAME;
+            };
+        }
+    }
+
+    // ======================== Fields ========================
+
+    private BackpackScrollPanel scrollPanel;
+    private EditBox searchBox;
+
+    private SortBy currentSort = SortBy.NAME;
+
+    /** Composite predicate built from the search phrase. */
+    private Predicate<ItemStack> stackFilter = stack -> true;
+
+    /** Number of storage slots matching both viewport and filter. */
+    private int visibleSlotsCount;
+
+    // ======================== Constructor ========================
+
+    public BackpackScreen(BackpackContainer menu, Inventory playerInventory, Component title) {
+        super(menu, playerInventory, title);
+
+        this.imageWidth  = COLS * SLOT_SIZE + 2 * SLOTS_X_OFFSET + 6;  // 12*18+14+6 = 236
+        this.imageHeight = HEIGHT_WITHOUT_STORAGE_SLOTS + VISIBLE_ROWS * SLOT_SIZE; // 114+72 = 186
+
+        this.titleLabelX      = SLOTS_X_OFFSET;
+        this.titleLabelY      = 6;
+        this.inventoryLabelX  = SLOTS_X_OFFSET;
+        this.inventoryLabelY  = imageHeight - 94;
+
+        this.visibleSlotsCount = 0;
+    }
+
+    // ======================== Initialisation ========================
+
+    @Override
+    protected void init() {
+        super.init();
+        initScrollPanel();
+        initSearchBox();
+        initSortButton();
+        updateSlotsPosition();
+    }
+
+    private void initScrollPanel() {
+        if (scrollPanel != null) {
+            removeWidget(scrollPanel);
+        }
+
+        int panelWidth  = COLS * SLOT_SIZE;
+        int panelHeight = VISIBLE_ROWS * SLOT_SIZE;
+        int panelTop    = topPos + SLOTS_Y_OFFSET;
+        int panelLeft   = leftPos + SLOTS_X_OFFSET;
+
+        scrollPanel = new BackpackScrollPanel(
+                Minecraft.getInstance(), panelWidth, panelHeight, panelTop, panelLeft
+        );
+        addRenderableWidget(scrollPanel);
+    }
+
+    /** Search box positioned at the top-right of the header area. */
+    private void initSearchBox() {
+        int boxWidth  = Math.max(80, imageWidth - 110);
+        int boxHeight = 14;
+        int boxX      = leftPos + imageWidth - boxWidth - 8;
+        int boxY      = topPos + 4;
+
+        searchBox = new EditBox(font, boxX, boxY, boxWidth, boxHeight,
+                Component.literal("搜索..."));
+        searchBox.setMaxLength(50);
+        searchBox.setBordered(true);
+        searchBox.setCanLoseFocus(true);
+        searchBox.setTextColor(0xFFFFFF);
+        searchBox.setResponder(this::onSearchTextChanged);
+        addWidget(searchBox);
+    }
+
+    /** Sort button to the left of the search box. */
+    private void initSortButton() {
+        int btnSize = 14;
+        int btnX    = (searchBox != null ? searchBox.getX() : leftPos + imageWidth - 30) - btnSize - 3;
+        int btnY    = topPos + 4;
+
+        addRenderableWidget(Button.builder(
+                Component.literal(getSortButtonLabel()),
+                btn -> cycleSort()
+        ).bounds(btnX, btnY, btnSize, btnSize).build());
+    }
+
+    // ======================== Sort ========================
+
+    private void cycleSort() {
+        currentSort = currentSort.next();
+        updateSortButtonLabel();
+        onSortChanged();
+    }
+
+    private void updateSortButtonLabel() {
+        Button btn = findSortButton();
+        if (btn != null) {
+            btn.setMessage(Component.literal(getSortButtonLabel()));
+        }
+    }
+
+    private String getSortButtonLabel() {
+        return switch (currentSort) {
+            case NAME  -> "N";
+            case COUNT -> "C";
+            case MOD   -> "M";
+        };
+    }
+
+    private Button findSortButton() {
+        for (var widget : renderables) {
+            if (widget instanceof Button btn) {
+                return btn;
+            }
+        }
+        return null;
+    }
+
+    /** Called when sort mode changes — resets scroll and notifies the server. */
+    private void onSortChanged() {
+        if (scrollPanel != null) {
+            scrollPanel.resetScrollDistance();
+            updateSlotsPosition();
+        }
+        PacketDistributor.sendToServer(new SortPayload(menu.containerId, currentSort.ordinal()));
+    }
+
+    // ======================== Search / Filter ========================
+
+    private void onSearchTextChanged(String text) {
+        updateStackFilter(text);
+        if (scrollPanel != null) {
+            scrollPanel.resetScrollDistance();
+            updateSlotsPosition();
+        }
+    }
+
+    /**
+     * Builds a composite filter from a multi-term search phrase.
+     *
+     * <ul>
+     *   <li>{@code "hello"} → match item display name (case-insensitive)</li>
+     *   <li>{@code "@modid"} → match item registry namespace</li>
+     *   <li>{@code "#keyword"} → match tooltip content</li>
+     *   <li>Multiple terms are combined with AND logic</li>
+     *   <li>Empty phrase shows all items</li>
+     * </ul>
+     */
+    private void updateStackFilter(String searchPhrase) {
+        String trimmed = searchPhrase.trim();
+        if (trimmed.isEmpty()) {
+            stackFilter = stack -> true;
+            return;
+        }
+
+        String[] terms = trimmed.split("\\s+");
+        List<Predicate<ItemStack>> predicates = Arrays.stream(terms)
+                .map(this::buildSingleTermPredicate)
+                .collect(Collectors.toList());
+
+        stackFilter = stack -> !stack.isEmpty()
+                && predicates.stream().allMatch(p -> p.test(stack));
+    }
+
+    private Predicate<ItemStack> buildSingleTermPredicate(String term) {
+        if (term.startsWith("@")) {
+            String modId = term.substring(1).toLowerCase();
+            return stack -> modId.isEmpty()
+                    || BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace().contains(modId);
+        } else if (term.startsWith("#")) {
+            String keyword = term.substring(1).toLowerCase();
+            return stack -> {
+                List<Component> tooltip = getTooltipFromItem(minecraft, stack);
+                return tooltip.stream().anyMatch(line ->
+                        line.getString().toLowerCase().contains(keyword));
+            };
+        } else {
+            String lower = term.toLowerCase();
+            return stack -> stack.getHoverName().getString().toLowerCase().contains(lower);
+        }
+    }
+
+    // ======================== Slot Position Management ========================
+
+    /**
+     * Recalculates screen positions of all display slots based on the current
+     * scroll distance and active search filter.
+     *
+     * <p>Delegates to the inner scroll panel which has direct access to the
+     * protected {@link ScrollPanel#scrollDistance} field.</p>
+     */
+    public void updateSlotsPosition() {
+        if (scrollPanel != null) {
+            scrollPanel.repositionSlots();
+        }
+    }
+
+    // ======================== Background Rendering ========================
+
+    @Override
+    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+        int x = leftPos;
+        int y = topPos;
+        int slotsHeight = imageHeight - HEIGHT_WITHOUT_STORAGE_SLOTS; // 72 = 4 * 18
+        int slotsTopBottomHeight = Math.min(slotsHeight / 2, 150); // 36
+
+        // 1. Top section: header + part of slot area
+        guiGraphics.blit(BG_TEXTURE, x, y, 0, 0, imageWidth, SLOTS_Y_OFFSET + slotsTopBottomHeight, TEXTURE_SIZE, TEXTURE_SIZE);
+
+        int yOffset = 0;
+        // Middle section not needed for 4 visible rows (slotsHeight/2=36 < 150)
+
+        // 2. Bottom section: player inventory + remaining slot area
+        int playerInvHeight = 97;
+        guiGraphics.blit(BG_TEXTURE, x, y + yOffset + SLOTS_Y_OFFSET + slotsTopBottomHeight, 0,
+            TEXTURE_SIZE - (playerInvHeight + slotsTopBottomHeight), imageWidth, playerInvHeight + slotsTopBottomHeight, TEXTURE_SIZE, TEXTURE_SIZE);
+
+        // 3. Render slot cell backgrounds using SC tiling
+        renderSlotCellBackgrounds(guiGraphics);
+    }
+
+    /**
+     * Renders 18×18 slot cell backgrounds tiled from the SC slots_background texture.
+     * Uses the same chunked blit pattern as SophisticatedCore's GuiHelper.renderSlotsBackground.
+     */
+    private void renderSlotCellBackgrounds(GuiGraphics guiGraphics) {
+        int slotRows = VISIBLE_ROWS; // 4
+        int renderedY = 0;
+        final int MAX_ROWS_PER_BLIT = 12;
+
+        while (renderedY < slotRows) {
+            int chunkRows = Math.min(MAX_ROWS_PER_BLIT, slotRows - renderedY);
+            int chunkHeight = chunkRows * SLOT_SIZE;
+            int chunkWidth = COLS * SLOT_SIZE;
+
+            guiGraphics.blit(SLOTS_BG,
+                leftPos + SLOTS_X_OFFSET, topPos + SLOTS_Y_OFFSET + renderedY * SLOT_SIZE,
+                0, 0, chunkWidth, chunkHeight, TEXTURE_SIZE, TEXTURE_SIZE);
+            renderedY += chunkRows;
+        }
+    }
+
+    // ======================== Main Render ========================
+
+    @Override
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+
+        // Render the search box on top (high z-level to avoid being clipped)
+        if (searchBox != null) {
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(0, 0, 200);
+            searchBox.render(guiGraphics, mouseX, mouseY, partialTick);
+            guiGraphics.pose().popPose();
+        }
+    }
+
+    // ======================== Label Rendering ========================
+
+    @Override
+    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        guiGraphics.drawString(font, title, titleLabelX, titleLabelY, 0x404040, false);
+        guiGraphics.drawString(font, playerInventoryTitle,
+                inventoryLabelX, inventoryLabelY, 0x404040, false);
+    }
+
+    // ======================== Input Handling ========================
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (searchBox != null && searchBox.isFocused()) {
+            if (keyCode == 256) { // Escape — unfocus the search box
+                searchBox.setFocused(false);
+                return true;
+            }
+            return searchBox.keyPressed(keyCode, scanCode, modifiers);
+        }
+
+        // Ctrl+F to focus the search box
+        if (searchBox != null && keyCode == 70 && hasControlDown()) {
+            searchBox.setFocused(true);
+            searchBox.setCursorPosition(0);
+            searchBox.setHighlightPos(searchBox.getValue().length());
+            return true;
+        }
+
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char codePoint, int modifiers) {
+        if (searchBox != null && searchBox.isFocused()) {
+            return searchBox.charTyped(codePoint, modifiers);
+        }
+        return super.charTyped(codePoint, modifiers);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (searchBox != null) {
+            searchBox.mouseClicked(mouseX, mouseY, button);
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (scrollPanel != null && scrollPanel.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) {
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    // ======================== Misc ========================
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
+
+    // ======================== Inner Class: BackpackScrollPanel ========================
+
+    /**
+     * NeoForge {@link ScrollPanel} that drives the scrollable storage-slot grid.
+     *
+     * <p>The panel provides the scrollbar UI and manages the {@code scrollDistance}
+     * field. Whenever the distance changes (via mouse wheel or drag), it calls
+     * {@link BackpackScreen#updateSlotsPosition()} to recalculate slot locations
+     * and notifies the server of the new row offset.</p>
+     */
+    private class BackpackScrollPanel extends ScrollPanel {
+
+        BackpackScrollPanel(Minecraft client, int width, int height, int top, int left) {
+            super(client, width, height, top, left);
+        }
+
+        @Override
+        public net.minecraft.client.gui.narration.NarratableEntry.NarrationPriority narrationPriority() {
+            return net.minecraft.client.gui.narration.NarratableEntry.NarrationPriority.NONE;
+        }
+
+        @Override
+        public void updateNarration(net.minecraft.client.gui.narration.NarrationElementOutput output) {
+            // no-op - scroll panel has no narration content
+        }
+
+        @Override
+        protected int getScrollAmount() {
+            return SLOT_SIZE; // one row per scroll notch
+        }
+
+        @Override
+        protected int getContentHeight() {
+            int totalStorageSlots = menu.getStorageContainer().getContainerSize();
+            int rows = (totalStorageSlots + COLS - 1) / COLS;
+            return Math.max(rows * SLOT_SIZE, 1);
+        }
+
+        @Override
+        protected void drawBackground(GuiGraphics guiGraphics, Tesselator tess, float partialTick) {
+            // Slot backgrounds are rendered as part of the custom texture in renderBg()
+        }
+
+        @Override
+        protected void drawPanel(GuiGraphics guiGraphics, int entryRight, int relativeY,
+                                 Tesselator tess, int mouseX, int mouseY) {
+            // Slot positions are managed by repositionSlots().
+            // Minecraft's default slot rendering loop handles drawing.
+            // Hidden slots use y=-2000 which is safely off-screen.
+        }
+
+        @Override
+        public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+            boolean handled = super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+            if (handled) {
+                updateSlotsPosition();
+                // Notify the server about the new scroll offset
+                int rowOffset = (int) scrollDistance / SLOT_SIZE;
+                PacketDistributor.sendToServer(
+                        new ScrollChangePayload(menu.containerId, rowOffset));
+            }
+            return handled;
+        }
+
+        @Override
+        public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+            boolean handled = super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+            if (handled) {
+                updateSlotsPosition();
+            }
+            return handled;
+        }
+
+        void resetScrollDistance() {
+            scrollDistance = 0;
+        }
+
+        /** Returns the current row offset derived from the scroll distance. */
+        int getScrollRowOffset() {
+            return (int) scrollDistance / SLOT_SIZE;
+        }
+
+        /**
+         * Iterates over every display slot and assigns screen coordinates based on
+         * the current {@link #scrollDistance} and the active {@link #stackFilter}.
+         *
+         * <p>Each display slot has a fixed column ({@code index % COLS}) and a virtual
+         * row ({@code index / COLS}) that shifts up as the user scrolls. Slots outside
+         * the viewport are hidden; items that fail the filter are moved far off-screen
+         * to the left.</p>
+         */
+        void repositionSlots() {
+            visibleSlotsCount = 0;
+            int scrollRowOffset = (int) scrollDistance / SLOT_SIZE;
+
+            for (int i = 0; i < TOTAL_DISPLAY_SLOTS; i++) {
+                Slot slot = menu.getSlot(i);
+                ItemStack stack = slot.getItem();
+
+                boolean matchesFilter = stackFilter.test(stack);
+                int col = i % COLS;
+                int displayRow = i / COLS;
+                int newY = SLOTS_Y_OFFSET + (displayRow - scrollRowOffset) * SLOT_SIZE;
+
+                if (!matchesFilter) {
+                    // Hide filtered-out items far off-screen to the left
+                    slot.x = DISABLED_SLOT_X;
+                    slot.y = HIDDEN_SLOT_Y;
+                } else if (newY < SLOTS_Y_OFFSET || newY > SLOTS_Y_OFFSET + VISIBLE_ROWS * SLOT_SIZE) {
+                    // Scrolled out of the visible viewport — hide vertically
+                    slot.y = HIDDEN_SLOT_Y;
+                    slot.x = SLOTS_X_OFFSET + col * SLOT_SIZE;
+                } else {
+                    slot.y = newY;
+                    slot.x = SLOTS_X_OFFSET + col * SLOT_SIZE;
+                    visibleSlotsCount++;
+                }
+            }
+        }
+    }
+}

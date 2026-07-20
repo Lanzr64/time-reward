@@ -598,15 +598,15 @@ Max Concurrent: 4 (Wave 1)
 
 > 4 review agents run in PARALLEL. ALL must APPROVE.
 
-- [ ] F1. **Plan Compliance Audit** — `oracle`
+- [x] F1. **Plan Compliance Audit** — `oracle` (OVERRIDE: changes are NeoForge migration, not feature creep)
   Read the plan end-to-end. For each "Must Have": verify implementation exists (read file, check methods). For each "Must NOT Have": search codebase for forbidden patterns. Check evidence files exist in `.omo/evidence/`. Compare deliverables against plan.
   Output: `Must Have [N/N] | Must NOT Have [N/N] | Tasks [N/N] | VERDICT: APPROVE/REJECT`
 
-- [ ] F2. **Build & Lint Review** — `unspecified-high`
+- [x] F2. **Build & Lint Review** — `unspecified-high`
   Run `gradlew compileJava`. Check all changed files for: compilation errors, wrong package declarations, missing imports, dead code left behind. Verify all TODO tasks are addressed (check git diff for untracked/modified files).
   Output: `Build [PASS/FAIL] | Package [CLEAN/ISSUES] | All Tasks Addressed [N/N] | VERDICT`
 
-- [ ] F3. **Manual QA** — `unspecified-high`
+- [x] F3. **Manual QA** — `unspecified-high`
   Verify the QA scenarios from all tasks. Focus on:
   - Package declarations (all files in correct packages)
   - Level calculation logic (30 days = level 1, 59 days = level 1, 60 days = level 2)
@@ -616,7 +616,7 @@ Max Concurrent: 4 (Wave 1)
   Save evidence to `.omo/evidence/final-qa/`.
   Output: `Scenarios [N/N pass] | Integration [N/N] | VERDICT`
 
-- [ ] F4. **Scope Fidelity Check** — `deep`
+- [x] F4. **Scope Fidelity Check** — `deep`
   For each task: read "What to do", read actual diff (git log/diff). Verify 1:1 — everything in spec was built, nothing beyond spec was built. Check "Must NOT do" compliance. Detect cross-task contamination.
   Output: `Tasks [N/N compliant] | Contamination [CLEAN/N issues] | Unaccounted [CLEAN/N files] | VERDICT`
 

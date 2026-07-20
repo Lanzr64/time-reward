@@ -1,0 +1,109 @@
+package net.lanzr.time_reward.network;
+
+import net.lanzr.time_reward.TimeReward;
+import net.lanzr.time_reward.inventory.BackpackContainer;
+import net.lanzr.time_reward.save.LZSavedData;
+import net.lanzr.time_reward.save.PlayerRewardManager;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
+import java.util.UUID;
+
+/**
+ * Handles C2S (server-bound) payloads on the server thread.
+ *
+ * <p>All handler methods are invoked via {@link IPayloadContext#enqueueWork} to
+ * ensure they run on the main server thread.</p>
+ */
+public final class ServerPayloadHandler {
+    private ServerPayloadHandler() {}
+
+    /**
+     * Handles a client request to open the backpack reward UI.
+     *
+     * <p>Loads or creates the player's reward container based on their current
+     * reward level, then opens a {@link BackpackContainer} menu with a save
+     * callback that persists changes when the container closes.</p>
+     */
+    public static void handleOpenBackpack(OpenBackpackPayload data, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (!(ctx.player() instanceof ServerPlayer player)) return;
+
+            int storedLevel = PlayerRewardManager.getStoredLevel(player.getUUID());
+            int playerLevel = Math.max(storedLevel, 0);
+            int expectedSlots = Math.min(playerLevel * 15, 900);
+
+            UUID playerUUID = player.getUUID();
+            HolderLookup.Provider lookup = player.serverLevel().registryAccess();
+            SimpleContainer container = PlayerRewardManager.loadOrCreate(
+                    playerUUID, expectedSlots, LZSavedData.getRewardBox(), lookup
+            );
+
+            player.openMenu(new MenuProvider() {
+                @Override
+                public Component getDisplayName() {
+                    return Component.literal("奖励背包");
+                }
+
+                @Override
+                public AbstractContainerMenu createMenu(int id, Inventory inv, Player p) {
+                    BackpackContainer bc = new BackpackContainer(id, inv, container, 0);
+                    bc.setSaveCallback(() -> {
+                        try {
+                            PlayerRewardManager.save(playerUUID, container, lookup);
+                        } catch (Exception e) {
+                            TimeReward.LOGGER.error("Save callback error", e);
+                        }
+                    });
+                    return bc;
+                }
+            }, buf -> {
+                buf.writeInt(container.getContainerSize());
+                buf.writeInt(0);
+            });
+        });
+    }
+
+    /**
+     * Handles a client scroll-offset update for the open backpack container.
+     *
+     * <p>Verifies that the player's currently open container is a
+     * {@link BackpackContainer}, then updates its scroll offset and
+     * synchronises the changes back to the client.</p>
+     */
+    public static void handleScrollChange(ScrollChangePayload data, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (!(ctx.player() instanceof ServerPlayer player)) return;
+
+            if (player.containerMenu instanceof BackpackContainer backpack) {
+                backpack.setScrollOffset(data.newOffset());
+                backpack.broadcastChanges();
+            }
+        });
+    }
+
+    /**
+     * Handles a client sort request for the open backpack container.
+     *
+     * <p>Verifies that the player's currently open container is a
+     * {@link BackpackContainer}, then applies the requested sort order and
+     * synchronises the changes back to the client.</p>
+     */
+    public static void handleSort(SortPayload data, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (!(ctx.player() instanceof ServerPlayer player)) return;
+
+            if (player.containerMenu instanceof BackpackContainer bc) {
+                bc.sort(BackpackContainer.SortType.values()[data.sortOrdinal()]);
+                bc.broadcastChanges();
+            }
+        });
+    }
+}

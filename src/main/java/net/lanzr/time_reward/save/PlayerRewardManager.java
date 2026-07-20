@@ -57,6 +57,7 @@ public class PlayerRewardManager {
                         for (int j = 0; j < loadedList.size(); j++) {
                             CompoundTag slotTag = loadedList.getCompound(j);
                             int slotIdx = slotTag.getInt("Slot");
+                            if (slotIdx >= expectedSize) continue;
                             if (slotTag.contains("Item", Tag.TAG_COMPOUND)) {
                                 newContainer.setItem(slotIdx, ItemStack.parse(lookup, slotTag.getCompound("Item")).orElse(ItemStack.EMPTY));
                             }
@@ -73,6 +74,7 @@ public class PlayerRewardManager {
                     for (int j = 0; j < loadedList.size(); j++) {
                         CompoundTag slotTag = loadedList.getCompound(j);
                         int slotIdx = slotTag.getInt("Slot");
+                        if (slotIdx >= expectedSize) continue;
                         if (slotTag.contains("Item", Tag.TAG_COMPOUND)) {
                             container.setItem(slotIdx, ItemStack.parse(lookup, slotTag.getCompound("Item")).orElse(ItemStack.EMPTY));
                         }

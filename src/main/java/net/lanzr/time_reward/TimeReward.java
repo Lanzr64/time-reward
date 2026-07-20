@@ -1,13 +1,17 @@
 package net.lanzr.time_reward;
 import net.lanzr.time_reward.api.PlayerCommentTools;
 import net.lanzr.time_reward.api.RewardTag;
+import net.lanzr.time_reward.init.ModMenuTypes;
+import net.lanzr.time_reward.network.OpenBackpackPayload;
+import net.lanzr.time_reward.network.ScrollChangePayload;
+import net.lanzr.time_reward.network.ServerPayloadHandler;
+import net.lanzr.time_reward.network.SortPayload;
 import net.lanzr.time_reward.save.LZSavedData;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
@@ -16,6 +20,8 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -34,12 +40,39 @@ public class TimeReward
 
     public TimeReward(IEventBus modEventBus, ModContainer modContainer)    {
         NeoForge.EVENT_BUS.register(this);
+
+        // Register DeferredRegisters
+        ModMenuTypes.MENUS.register(modEventBus);
+
+        // Register network payloads
+        modEventBus.addListener(RegisterPayloadHandlersEvent.class, this::registerPayloads);
+    }
+
+    private void registerPayloads(final RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar("1");
+        registrar.playToServer(
+                OpenBackpackPayload.TYPE,
+                OpenBackpackPayload.STREAM_CODEC,
+                ServerPayloadHandler::handleOpenBackpack
+        );
+        registrar.playToServer(
+                ScrollChangePayload.TYPE,
+                ScrollChangePayload.STREAM_CODEC,
+                ServerPayloadHandler::handleScrollChange
+        );
+        registrar.playToServer(
+                SortPayload.TYPE,
+                SortPayload.STREAM_CODEC,
+                ServerPayloadHandler::handleSort
+        );
     }
 
     @SubscribeEvent
     public void onServerStarted(ServerStartedEvent event) {
-        ServerLevel world = event.getServer().getLevel(Level.OVERWORLD);
-        assert world != null;
+        ServerLevel world = java.util.Objects.requireNonNull(
+                event.getServer().getLevel(Level.OVERWORLD),
+                "Overworld must exist when server starts"
+        );
         if (!world.isClientSide) {
             LZSavedData worldData = world.getDataStorage().computeIfAbsent(LZSavedData.FACTORY, LZSavedData.SAVE_DATA_NAME);
             LZSavedData.setInstance(worldData);
@@ -48,7 +81,7 @@ public class TimeReward
     }
     @SubscribeEvent
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        ServerPlayer player = (ServerPlayer) event.getEntity();
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if(LZSavedData.SET_DONE) {
             RewardTag rewardTag = new RewardTag(player);
             int playerLevel = rewardTag.getLevel();

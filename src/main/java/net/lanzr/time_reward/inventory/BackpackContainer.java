@@ -1,0 +1,329 @@
+package net.lanzr.time_reward.inventory;
+
+import net.lanzr.time_reward.init.ModMenuTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * Server-side container for the backpack UI.
+ * <p>
+ * Displays a scrollable grid of {@link DynamicScrollSlot}s (12 columns × 4 visible rows)
+ * backed by a {@link Container}, plus the player's inventory and hotbar.
+ * Supports scrolling, sorting (NAME / COUNT / MOD), and auto-save on close.
+ * </p>
+ *
+ * <h3>Construction</h3>
+ * <ul>
+ *   <li><b>Server</b>: {@link #BackpackContainer(int, Inventory, Container, int)} —
+ *       accepts the real storage container and initial scroll offset.</li>
+ *   <li><b>Client</b>: {@link #BackpackContainer(int, Inventory, FriendlyByteBuf)} —
+ *       used by {@link net.neoforged.neoforge.common.extensions.IMenuTypeExtension}
+ *       (registered in {@link ModMenuTypes}). Reads scroll offset and container size
+ *       from the network buffer, creates a dummy container.</li>
+ * </ul>
+ *
+ * <h3>Slot Layout</h3>
+ * <pre>
+ *   Rows 0-3:  DynamicScrollSlots (48 slots, indices 0-47)
+ *   Row 4-6:   Player inventory   (27 slots, indices 48-74)
+ *   Row 7:     Hotbar             ( 9 slots, indices 75-83)
+ * </pre>
+ *
+ * <p><b>Scroll offset sync strategy</b>: the offset is a plain {@code int} field.
+ * The client screen manages its local offset (initially from the buffer, then
+ * updated on scroll input). When the server processes a scroll (via C2S packet),
+ * it calls {@link #setScrollOffset(int)} which updates the field and triggers
+ * {@link #broadcastChanges()} so all display-slot items are re-sent at the new
+ * offset — the client already has the correct offset when items arrive, avoiding
+ * a data-vs-slot sync ordering hazard.</p>
+ */
+public class BackpackContainer extends AbstractContainerMenu {
+
+    // ========== Layout Constants ==========
+
+    /** Number of columns in the scrollable grid. */
+    public static final int COLS = 12;
+    /** Number of visible rows in the scrollable grid. */
+    public static final int VISIBLE_ROWS = 4;
+    /** Total display slots (12 × 4 = 48). */
+    public static final int TOTAL_DISPLAY_SLOTS = COLS * VISIBLE_ROWS;
+    /** First player-inventory slot index. */
+    public static final int PLAYER_INV_START = TOTAL_DISPLAY_SLOTS;        // 48
+    /** First hotbar slot index. */
+    public static final int HOTBAR_START = PLAYER_INV_START + 27;          // 75
+    /** Total number of slots in this menu. */
+    public static final int TOTAL_SLOTS = HOTBAR_START + 9;                // 84
+
+    // ========== Fields ==========
+
+    private final Container storageContainer;
+    private final Player player;
+    private Runnable saveCallback = () -> { };
+
+    /** Current scroll offset in rows. Managed locally on each side. */
+    private int scrollOffset;
+
+    // ========== Constructors ==========
+
+    /**
+     * Server-side constructor.
+     *
+     * @param id             container id
+     * @param playerInventory the opening player's inventory
+     * @param container      the real storage container to read/write items
+     * @param scrollOffset   initial scroll offset (rows)
+     */
+    public BackpackContainer(int id, Inventory playerInventory, Container container, int scrollOffset) {
+        super(ModMenuTypes.get(), id);
+        this.player = playerInventory.player;
+        this.storageContainer = container;
+        this.scrollOffset = scrollOffset;
+        setupSlots(playerInventory);
+    }
+
+    /**
+     * Client-side constructor, invoked by {@code IMenuTypeExtension.create()} from
+     * the network buffer.
+     *
+     * @param id             container id
+     * @param playerInventory the client player's inventory
+     * @param buf            network buffer containing {@code containerSize} then {@code scrollOffset}
+     */
+    public BackpackContainer(int id, Inventory playerInventory, FriendlyByteBuf buf) {
+        super(ModMenuTypes.get(), id);
+        this.player = playerInventory.player;
+        int containerSize = buf.readInt();
+        this.storageContainer = new SimpleContainer(containerSize);
+        this.scrollOffset = buf.readInt();
+        setupSlots(playerInventory);
+    }
+
+    // ========== Slot Layout ==========
+
+    /**
+     * Creates and adds all slots:
+     * <ol>
+     *   <li>{@code TOTAL_DISPLAY_SLOTS} {@link DynamicScrollSlot}s (visible grid)</li>
+     *   <li>3 rows of player inventory (27 slots)</li>
+     *   <li>1 row of hotbar (9 slots)</li>
+     * </ol>
+     */
+    private void setupSlots(Inventory playerInventory) {
+        // ---- Scrollable display grid ----
+        for (int row = 0; row < VISIBLE_ROWS; row++) {
+            for (int col = 0; col < COLS; col++) {
+                int displayIndex = row * COLS + col;
+                addSlot(new DynamicScrollSlot(
+                        storageContainer, displayIndex, COLS,
+                        this::getScrollOffset,
+                        8 + col * 18, 18 + row * 18));
+            }
+        }
+
+        // ---- Player inventory (3 rows × 9 cols) ----
+        int playerInvX = 8 + 30; // 8 + PLAYER_INV_X_OFFSET for WIDER_12_SLOT layout
+        int playerInvY = 18 + VISIBLE_ROWS * 18 + 14;
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                addSlot(new Slot(playerInventory, 9 + col + row * 9,
+                        playerInvX + col * 18, playerInvY + row * 18));
+            }
+        }
+
+        // ---- Hotbar (1 row × 9 cols) ----
+        int hotbarY = playerInvY + 3 * 18 + 4;
+        for (int col = 0; col < 9; col++) {
+            addSlot(new Slot(playerInventory, col,
+                    playerInvX + col * 18, hotbarY));
+        }
+    }
+
+    // ========== Scroll Offset Management ==========
+
+    /**
+     * @return the current scroll offset in rows
+     */
+    public int getScrollOffset() {
+        return scrollOffset;
+    }
+
+    /**
+     * Directly sets the scroll offset on the client side (called by the screen on scroll).
+     * This is fast — just a field update — so the client can render immediately before
+     * the server acknowledges the scroll.
+     */
+    public void setClientScrollOffset(int offset) {
+        this.scrollOffset = Math.max(0, Math.min(offset, getMaxScrollOffset()));
+    }
+
+    /**
+     * Sets the scroll offset on the server, clamps to the valid range, and immediately
+     * triggers {@link #broadcastChanges()} so that display-slot items are re-sent at
+     * the new offset.
+     */
+    public void setScrollOffset(int offset) {
+        this.scrollOffset = clampScrollOffset(offset);
+        broadcastChanges();
+    }
+
+    /**
+     * Adjusts the scroll offset by {@code delta} rows (positive = scroll down)
+     * and broadcasts the resulting item changes.
+     */
+    public void onScroll(int delta) {
+        setScrollOffset(this.scrollOffset + delta);
+    }
+
+    /**
+     * @return the maximum scroll offset (rows), or 0 if all rows fit on screen
+     */
+    public int getMaxScrollOffset() {
+        int totalRows = (storageContainer.getContainerSize() + COLS - 1) / COLS;
+        return Math.max(0, totalRows - VISIBLE_ROWS);
+    }
+
+    private int clampScrollOffset(int offset) {
+        return Math.max(0, Math.min(offset, getMaxScrollOffset()));
+    }
+
+    // ========== Sorting ==========
+
+    /** Sort criteria for the backpack contents. */
+    public enum SortType {
+        NAME,
+        COUNT,
+        MOD
+    }
+
+    /**
+     * Sorts the items in the storage container by the given criterion,
+     * then resets the scroll position to the top and broadcasts changes.
+     */
+    public void sort(SortType type) {
+        // Gather all items from the container
+        List<ItemStack> items = new ArrayList<>();
+        for (int i = 0; i < storageContainer.getContainerSize(); i++) {
+            items.add(storageContainer.getItem(i));
+        }
+
+        // Separate non-empty items for sorting
+        List<ItemStack> nonEmpty = new ArrayList<>();
+        for (ItemStack stack : items) {
+            if (!stack.isEmpty()) {
+                nonEmpty.add(stack);
+            }
+        }
+
+        // Build comparator
+        Comparator<ItemStack> comparator = buildSortComparator(type);
+        nonEmpty.sort(comparator);
+
+        // Write sorted items back to the container
+        int idx = 0;
+        for (ItemStack stack : nonEmpty) {
+            storageContainer.setItem(idx++, stack.copy());
+        }
+        // Fill remaining slots with empty stacks
+        for (; idx < storageContainer.getContainerSize(); idx++) {
+            storageContainer.setItem(idx, ItemStack.EMPTY);
+        }
+
+        // Reset scroll to top (triggers broadcastChanges internally)
+        setScrollOffset(0);
+    }
+
+    private static Comparator<ItemStack> buildSortComparator(SortType type) {
+        switch (type) {
+            case NAME:
+                return Comparator.comparing(
+                        stack -> stack.getHoverName().getString().toLowerCase(Locale.ROOT));
+            case COUNT:
+                return Comparator.<ItemStack>comparingInt(ItemStack::getCount)
+                        .reversed()
+                        .thenComparing(stack -> stack.getHoverName().getString().toLowerCase(Locale.ROOT));
+            case MOD:
+                return Comparator.<ItemStack, String>comparing(
+                                stack -> BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace())
+                        .thenComparing(stack -> stack.getHoverName().getString().toLowerCase(Locale.ROOT));
+            default:
+                return (a, b) -> 0;
+        }
+    }
+
+    // ========== Shift-Click (Quick Move) ==========
+
+    @Override
+    public ItemStack quickMoveStack(Player player, int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= slots.size()) {
+            return ItemStack.EMPTY;
+        }
+
+        Slot slot = slots.get(slotIndex);
+        if (!slot.hasItem()) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack stackInSlot = slot.getItem();
+        ItemStack result = stackInSlot.copy();
+
+        if (slotIndex < PLAYER_INV_START) {
+            // Display grid → player inventory
+            if (!moveItemStackTo(stackInSlot, PLAYER_INV_START, TOTAL_SLOTS, true)) {
+                return ItemStack.EMPTY;
+            }
+        } else {
+            // Player inventory → display grid
+            if (!moveItemStackTo(stackInSlot, 0, TOTAL_DISPLAY_SLOTS, false)) {
+                return ItemStack.EMPTY;
+            }
+        }
+
+        if (stackInSlot.isEmpty()) {
+            slot.set(ItemStack.EMPTY);
+        } else {
+            slot.setChanged();
+        }
+
+        return result;
+    }
+
+    // ========== Lifecycle ==========
+
+    @Override
+    public void removed(Player player) {
+        super.removed(player);
+        saveCallback.run();
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        return true;
+    }
+
+    // ========== Callbacks & Accessors ==========
+
+    /**
+     * Registers a callback invoked when the container is closed.
+     * Typically used to persist the container to disk via {@link net.lanzr.time_reward.save.PlayerRewardManager}.
+     */
+    public void setSaveCallback(Runnable callback) {
+        this.saveCallback = callback;
+    }
+
+    /** Returns the backing storage container. */
+    public Container getStorageContainer() {
+        return storageContainer;
+    }
+}
