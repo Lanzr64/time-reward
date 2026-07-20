@@ -75,6 +75,9 @@ public class BackpackContainer extends AbstractContainerMenu {
     /** Current scroll offset in rows. Managed locally on each side. */
     private int scrollOffset;
 
+    /** Index of the last row (0-based) that contains items, set by server when opening. */
+    private int lastOccupiedRow;
+
     // ========== Constructors ==========
 
     /**
@@ -107,6 +110,7 @@ public class BackpackContainer extends AbstractContainerMenu {
         int containerSize = buf.readInt();
         this.storageContainer = new SimpleContainer(containerSize);
         this.scrollOffset = buf.readInt();
+        this.lastOccupiedRow = buf.readInt();
         setupSlots(playerInventory);
     }
 
@@ -157,6 +161,10 @@ public class BackpackContainer extends AbstractContainerMenu {
      */
     public int getScrollOffset() {
         return scrollOffset;
+    }
+
+    public int getLastOccupiedRow() {
+        return lastOccupiedRow;
     }
 
     /**

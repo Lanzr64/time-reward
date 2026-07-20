@@ -127,6 +127,13 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
         int panelTop    = topPos + SLOTS_Y_OFFSET;
         int panelLeft   = leftPos + SLOTS_X_OFFSET;
 
+        // Only create scroll panel if content exceeds visible area
+        int contentRows = menu.getLastOccupiedRow() + 3;
+        if (contentRows * SLOT_SIZE <= panelHeight) {
+            scrollPanel = null;
+            return;
+        }
+
         scrollPanel = new BackpackScrollPanel(
                 Minecraft.getInstance(), panelWidth, panelHeight, panelTop, panelLeft
         );
@@ -306,6 +313,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
         int renderedY = 0;
         final int MAX_ROWS_PER_BLIT = 12;
 
+        // Render slot backgrounds for all visible rows
         while (renderedY < slotRows) {
             int chunkRows = Math.min(MAX_ROWS_PER_BLIT, slotRows - renderedY);
             int chunkHeight = chunkRows * SLOT_SIZE;
@@ -315,6 +323,17 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
                 leftPos + SLOTS_X_OFFSET, topPos + SLOTS_Y_OFFSET + renderedY * SLOT_SIZE,
                 0, 0, chunkWidth, chunkHeight, TEXTURE_SIZE, TEXTURE_SIZE);
             renderedY += chunkRows;
+        }
+
+        // Dim rows beyond the last occupied row to visually distinguish empty slots
+        int lastOccupiedRow = menu.getLastOccupiedRow();
+        int firstEmptyRow = lastOccupiedRow + 1;
+        if (firstEmptyRow < visibleRows) {
+            int dimX = leftPos + SLOTS_X_OFFSET;
+            int dimY = topPos + SLOTS_Y_OFFSET + firstEmptyRow * SLOT_SIZE;
+            int dimWidth = COLS * SLOT_SIZE;
+            int dimHeight = (visibleRows - firstEmptyRow) * SLOT_SIZE;
+            guiGraphics.fill(dimX, dimY, dimX + dimWidth, dimY + dimHeight, 0x80000000);
         }
     }
 
@@ -442,9 +461,9 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
 
         @Override
         protected int getContentHeight() {
-            int totalStorageSlots = menu.getStorageContainer().getContainerSize();
-            int rows = (totalStorageSlots + COLS - 1) / COLS;
-            return Math.max(rows * SLOT_SIZE, 1);
+            int lastOccupiedRow = menu.getLastOccupiedRow();
+            int rows = lastOccupiedRow + 3;
+            return rows * SLOT_SIZE;
         }
 
         @Override

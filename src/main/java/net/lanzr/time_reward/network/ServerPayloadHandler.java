@@ -1,6 +1,8 @@
 package net.lanzr.time_reward.network;
 
 import net.lanzr.time_reward.TimeReward;
+import net.lanzr.time_reward.api.CommentInfo;
+import net.lanzr.time_reward.api.PlayerCommentTools;
 import net.lanzr.time_reward.inventory.BackpackContainer;
 import net.lanzr.time_reward.save.LZSavedData;
 import net.lanzr.time_reward.save.PlayerRewardManager;
@@ -36,15 +38,34 @@ public final class ServerPayloadHandler {
         ctx.enqueueWork(() -> {
             if (!(ctx.player() instanceof ServerPlayer player)) return;
 
-            int storedLevel = PlayerRewardManager.getStoredLevel(player.getUUID());
-            int playerLevel = Math.max(storedLevel, 0);
-            int expectedSlots = Math.min(playerLevel * 15, 900);
+            // Get current reward level from player comments (same as /tyj-reward get)
+            CommentInfo commentInfo = new CommentInfo();
+            int haveReward = PlayerCommentTools.getPlayerComment(player.getName().getString(), commentInfo);
+            int currentLevel = haveReward >= 0 ? Math.max(commentInfo.level, 0) : 0;
 
             UUID playerUUID = player.getUUID();
+            int storedLevel = PlayerRewardManager.getStoredLevel(playerUUID);
+
+            // Use the higher of current level and stored level for container size
+            int effectiveLevel = Math.max(currentLevel, storedLevel);
+            int expectedSlots = Math.min(effectiveLevel * 15, 900);
+
             HolderLookup.Provider lookup = player.serverLevel().registryAccess();
             SimpleContainer container = PlayerRewardManager.loadOrCreate(
                     playerUUID, expectedSlots, LZSavedData.getRewardBox(), lookup
             );
+
+            final int saveLevel = effectiveLevel;
+
+            int lastOccupiedRow = 0;
+            for (int i = container.getContainerSize() - 1; i >= 0; i--) {
+                if (!container.getItem(i).isEmpty()) {
+                    lastOccupiedRow = i / BackpackContainer.COLS;
+                    break;
+                }
+            }
+
+            final int finalLastOccupiedRow = lastOccupiedRow;
 
             player.openMenu(new MenuProvider() {
                 @Override
@@ -57,7 +78,7 @@ public final class ServerPayloadHandler {
                     BackpackContainer bc = new BackpackContainer(id, inv, container, 0);
                     bc.setSaveCallback(() -> {
                         try {
-                            PlayerRewardManager.save(playerUUID, container, lookup);
+                            PlayerRewardManager.save(playerUUID, container, lookup, saveLevel);
                         } catch (Exception e) {
                             TimeReward.LOGGER.error("Save callback error", e);
                         }
@@ -67,6 +88,7 @@ public final class ServerPayloadHandler {
             }, buf -> {
                 buf.writeInt(container.getContainerSize());
                 buf.writeInt(0);
+                buf.writeInt(finalLastOccupiedRow);
             });
         });
     }
