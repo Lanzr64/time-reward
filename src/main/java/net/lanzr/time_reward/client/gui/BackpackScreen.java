@@ -421,6 +421,22 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (scrollPanel != null && scrollPanel.mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (scrollPanel != null && scrollPanel.mouseReleased(mouseX, mouseY, button)) {
+            return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
     // ======================== Misc ========================
 
     @Override
@@ -545,6 +561,23 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
                     slot.x = SLOTS_X_OFFSET + col * SLOT_SIZE;
                     visibleSlotsCount++;
                 }
+            }
+
+            // Reposition player inventory to sit right below the visible storage grid
+            int playerInvTopY = SLOTS_Y_OFFSET + visibleRows * SLOT_SIZE + 14;
+            int playerInvX = 8 + PLAYER_INV_X_OFFSET;
+
+            for (int row = 0; row < 3; row++) {
+                for (int col = 0; col < 9; col++) {
+                    Slot slot = menu.getSlot(BackpackContainer.PLAYER_INV_START + row * 9 + col);
+                    slot.y = playerInvTopY + row * SLOT_SIZE;
+                    slot.x = playerInvX + col * SLOT_SIZE;
+                }
+            }
+            for (int col = 0; col < 9; col++) {
+                Slot slot = menu.getSlot(BackpackContainer.HOTBAR_START + col);
+                slot.y = playerInvTopY + 3 * SLOT_SIZE + 4;
+                slot.x = playerInvX + col * SLOT_SIZE;
             }
         }
     }
