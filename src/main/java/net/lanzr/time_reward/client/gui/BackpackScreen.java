@@ -115,6 +115,18 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
         initSearchBox();
         initSortButton();
         updateSlotsPosition();
+        // === [BackpackScreen-Diag] TEMP PROBE — task 1 root-cause analysis (REMOVE AFTER FIX) ===
+        int _diagLOR = menu.getLastOccupiedRow();
+        int _diagCS = menu.getStorageContainer().getContainerSize();
+        System.out.println("[BackpackScreen-Diag] init() end:"
+                + " lastOccupiedRow=" + _diagLOR
+                + " containerSize=" + _diagCS
+                + " visibleRows=" + visibleRows
+                + " scrollPanel=" + (scrollPanel != null ? "non-null" : "null"));
+        if (scrollPanel != null) {
+            scrollPanel.dumpDiag("init()");
+        }
+        // === END DIAG PROBE ===
     }
 
     private void initScrollPanel() {
@@ -345,9 +357,29 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
         this.visibleRows = newVisibleRows;
         this.imageHeight = HEIGHT_WITHOUT_STORAGE_SLOTS + visibleRows * SLOT_SIZE;
         this.inventoryLabelY = imageHeight - 94;
+        // === [BackpackScreen-Diag] snapshot pre-resize state (TEMP PROBE — REMOVE AFTER FIX) ===
+        float _oldScrollDistance = (scrollPanel != null) ? scrollPanel.getScrollDistanceDiag() : 0.0f;
+        int _oldMaxScroll = (scrollPanel != null) ? scrollPanel.getMaxScrollDiag() : -1;
+        // === END DIAG PROBE ===
         super.resize(minecraft, width, height);
         initScrollPanel();
         updateSlotsPosition();
+        // === [BackpackScreen-Diag] TEMP PROBE — task 1 root-cause analysis (REMOVE AFTER FIX) ===
+        int _diagLOR = menu.getLastOccupiedRow();
+        int _diagCS = menu.getStorageContainer().getContainerSize();
+        boolean _reclampNeeded = _oldScrollDistance > 0 && scrollPanel != null && _oldScrollDistance > scrollPanel.getMaxScrollDiag();
+        System.out.println("[BackpackScreen-Diag] resize() end:"
+                + " lastOccupiedRow=" + _diagLOR
+                + " containerSize=" + _diagCS
+                + " visibleRows=" + visibleRows
+                + " oldScrollDistance=" + _oldScrollDistance
+                + " oldMaxScroll=" + _oldMaxScroll
+                + " scrollPanel=" + (scrollPanel != null ? "non-null" : "null")
+                + " reclamp-needed?" + _reclampNeeded);
+        if (scrollPanel != null) {
+            scrollPanel.dumpDiag("resize()");
+        }
+        // === END DIAG PROBE ===
     }
 
     // ======================== Main Render ========================
@@ -505,8 +537,70 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
                 PacketDistributor.sendToServer(
                         new ScrollChangePayload(menu.containerId, rowOffset));
             }
+            // === [BackpackScreen-Diag] TEMP PROBE — task 1 root-cause analysis (REMOVE AFTER FIX) ===
+            int _diagLOR = menu.getLastOccupiedRow();
+            int _diagCS = menu.getStorageContainer().getContainerSize();
+            int _contentHeight = getContentHeight();
+            int _maxScroll = _contentHeight - (height - border); // mirrors private ScrollPanel.getMaxScroll()
+            int _rowOffset = (int) scrollDistance / SLOT_SIZE;
+            System.out.println("[BackpackScreen-Diag] mouseScrolled() end:"
+                    + " scrollDistance=" + scrollDistance
+                    + " getMaxScroll()=" + _maxScroll
+                    + " rowOffset=(int)scrollDistance/SLOT_SIZE=" + _rowOffset
+                    + " lastOccupiedRow=" + _diagLOR
+                    + " containerSize=" + _diagCS
+                    + " visibleRows=" + BackpackScreen.this.visibleRows
+                    + " contentHeight=" + _contentHeight
+                    + " height=" + height
+                    + " border=" + border
+                    + " handled=" + handled);
+            // === END DIAG PROBE ===
             return handled;
         }
+
+        // ==================== TEMP DIAG HELPERS (task 1) — REMOVE AFTER FIX ====================
+
+        /** Public diag wrapper exposing the protected {@code scrollDistance} field (float). */
+        public float getScrollDistanceDiag() {
+            return scrollDistance;
+        }
+
+        /**
+         * Public diag wrapper recomputing the value that NeoForge's
+         * {@code private int ScrollPanel.getMaxScroll()} returns. The formula is
+         * {@code getContentHeight() - (height - border)}; both inputs are
+         * protected fields accessible from this subclass.
+         */
+        public int getMaxScrollDiag() {
+            return getContentHeight() - (height - border);
+        }
+
+        /** Public diag wrapper exposing the protected {@code getContentHeight()} value. */
+        public int getContentHeightDiag() {
+            return getContentHeight();
+        }
+
+        /**
+         * Dumps all scroll-panel state with a [BackpackScreen-Diag] tag for in-game log analysis.
+         * Called from {@link BackpackScreen#init()} and {@link BackpackScreen#resize()}.
+         */
+        public void dumpDiag(String where) {
+            int contentHeight = getContentHeight();
+            int maxScroll = contentHeight - (height - border); // mirrors private ScrollPanel.getMaxScroll()
+            System.out.println("[BackpackScreen-Diag] " + where + " (panel):"
+                    + " scrollDistance=" + scrollDistance
+                    + " getMaxScroll()=" + maxScroll
+                    + " getContentHeight()=" + contentHeight
+                    + " height=" + height
+                    + " border=" + border
+                    + " getContentHeight()-height=" + (contentHeight - height)
+                    + " lastOccupiedRow=" + menu.getLastOccupiedRow()
+                    + " containerSize=" + menu.getStorageContainer().getContainerSize()
+                    + " visibleRows=" + BackpackScreen.this.visibleRows
+                    + " scrollRowOffset=" + ((int) scrollDistance / SLOT_SIZE));
+        }
+
+        // ==================== END TEMP DIAG HELPERS ====================
 
         @Override
         public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {

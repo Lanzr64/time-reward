@@ -78,6 +78,14 @@ public class BackpackContainer extends AbstractContainerMenu {
     /** Index of the last row (0-based) that contains items, set by server when opening. */
     private int lastOccupiedRow;
 
+    /**
+     * Dirty flag set whenever the storage container's occupied-row boundary may
+     * have changed (item added/removed/sorted). A future {@code broadcastChanges()}
+     * override will consult this flag to decide whether an O(n) re-scan of the
+     * container is warranted before sending updates to the client.
+     */
+    private boolean lastOccupiedDirty = true;
+
     // ========== Constructors ==========
 
     /**
@@ -165,6 +173,50 @@ public class BackpackContainer extends AbstractContainerMenu {
 
     public int getLastOccupiedRow() {
         return lastOccupiedRow;
+    }
+
+    /**
+     * @return the total number of slots in the backing storage container.
+     * Delegates to {@link Container#getContainerSize()}.
+     */
+    public int getContainerSize() {
+        return storageContainer.getContainerSize();
+    }
+
+    /**
+     * Directly overwrites the {@code lastOccupiedRow} field <b>without</b> any
+     * broadcast side effects. Intended for client-side re-clamp paths
+     * (e.g. {@code ClientPayloadHandler}) where the caller drives re-clamp
+     * separately after updating this field.
+     *
+     * @param row the new last-occupied-row value (use {@code -1} to denote
+     *            "container fully empty")
+     */
+    public void setLastOccupiedRow(int row) {
+        this.lastOccupiedRow = row;
+    }
+
+    /**
+     * Server-side helper that scans {@code storageContainer} from the last
+     * index down to {@code 0}, finds the highest occupied row, updates the
+     * {@link #lastOccupiedRow} field in place, and returns the recomputed
+     * value.
+     * <p>
+     * Semantics for an empty container: {@code -1} (NOT {@code 0}).
+     *
+     * @return the recomputed last-occupied-row index, or {@code -1} if the
+     *         container is completely empty
+     */
+    public int recomputeLastOccupiedRow() {
+        int containerSize = storageContainer.getContainerSize();
+        for (int i = containerSize - 1; i >= 0; i--) {
+            if (!storageContainer.getItem(i).isEmpty()) {
+                this.lastOccupiedRow = i / COLS;
+                return this.lastOccupiedRow;
+            }
+        }
+        this.lastOccupiedRow = -1;
+        return -1;
     }
 
     /**
