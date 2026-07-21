@@ -549,6 +549,10 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
                 int rowOffset = (int) scrollDistance / SLOT_SIZE;
                 PacketDistributor.sendToServer(
                         new ScrollChangePayload(menu.containerId, rowOffset));
+                // Sync the client-side scrollOffset immediately so
+                // DynamicScrollSlot.getActualIndex() uses the correct offset
+                // before the server acknowledges the scroll.
+                menu.setClientScrollOffset(rowOffset);
             }
             return handled;
         }

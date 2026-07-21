@@ -254,7 +254,16 @@ public class BackpackContainer extends AbstractContainerMenu {
      * the server acknowledges the scroll.
      */
     public void setClientScrollOffset(int offset) {
-        this.scrollOffset = Math.max(0, Math.min(offset, getMaxScrollOffset()));
+        this.scrollOffset = Math.max(0, Math.min(offset, getClientMaxScrollOffset()));
+    }
+
+    /**
+     * Returns the max scroll offset the client allows, based on lastOccupiedRow
+     * (the actual content extent), NOT the container capacity. This matches the
+     * semantics of {@code BackpackScrollPanel.getContentHeight()}.
+     */
+    private int getClientMaxScrollOffset() {
+        return Math.max(0, lastOccupiedRow + 1 - MAX_VISIBLE_ROWS);
     }
 
     /**
