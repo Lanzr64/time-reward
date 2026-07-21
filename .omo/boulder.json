@@ -49,6 +49,16 @@
       "status": "completed",
       "ended_at": "2026-07-21T06:23:58.154Z",
       "elapsed_ms": 403004
+    },
+    "final-wave:f2": {
+      "task_key": "final-wave:f2",
+      "task_label": "F2",
+      "task_title": "**代码质量审阅** — `unspecified-high`",
+      "session_id": "opencode:ses_07ca6054affeDKfVRjJpiePg9E",
+      "agent": "oracle",
+      "updated_at": "2026-07-21T06:45:03.723Z",
+      "started_at": "2026-07-21T06:45:03.723Z",
+      "status": "running"
     }
   },
   "schema_version": 2,
@@ -59,7 +69,7 @@
       "plan_name": "backpack-scroll-and-mask-fix",
       "status": "active",
       "started_at": "2026-07-21T05:31:47Z",
-      "updated_at": "2026-07-21T06:23:58.154Z",
+      "updated_at": "2026-07-21T06:45:03.722Z",
       "session_ids": [
         "opencode:ses_07d555d2affeIf30LYwsp3mWuk"
       ],
@@ -106,10 +116,20 @@
           "status": "completed",
           "ended_at": "2026-07-21T06:23:58.154Z",
           "elapsed_ms": 403004
+        },
+        "final-wave:f2": {
+          "task_key": "final-wave:f2",
+          "task_label": "F2",
+          "task_title": "**代码质量审阅** — `unspecified-high`",
+          "session_id": "opencode:ses_07ca6054affeDKfVRjJpiePg9E",
+          "agent": "oracle",
+          "updated_at": "2026-07-21T06:45:03.723Z",
+          "started_at": "2026-07-21T06:45:03.723Z",
+          "status": "running"
         }
       }
     }
   },
   "active_work_id": "backpack-scroll-and-mask-fix-legacy",
-  "updated_at": "2026-07-21T06:23:58.154Z"
+  "updated_at": "2026-07-21T06:45:03.722Z"
 }
