@@ -36,6 +36,19 @@
       "status": "completed",
       "ended_at": "2026-07-21T06:08:27.593Z",
       "elapsed_ms": 158782
+    },
+    "todo:7": {
+      "task_key": "todo:7",
+      "task_label": "7",
+      "task_title": "`resize()` 新增 re-clamp 调用 + 执行 7-场景复现矩阵收集证据",
+      "session_id": "opencode:ses_07cb43b15ffeh0a2Ar5EaL7gSi",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-07-21T06:23:58.154Z",
+      "started_at": "2026-07-21T06:17:15.150Z",
+      "status": "completed",
+      "ended_at": "2026-07-21T06:23:58.154Z",
+      "elapsed_ms": 403004
     }
   },
   "schema_version": 2,
@@ -46,7 +59,7 @@
       "plan_name": "backpack-scroll-and-mask-fix",
       "status": "active",
       "started_at": "2026-07-21T05:31:47Z",
-      "updated_at": "2026-07-21T06:08:27.593Z",
+      "updated_at": "2026-07-21T06:23:58.154Z",
       "session_ids": [
         "opencode:ses_07d555d2affeIf30LYwsp3mWuk"
       ],
@@ -80,10 +93,23 @@
           "status": "completed",
           "ended_at": "2026-07-21T06:08:27.593Z",
           "elapsed_ms": 158782
+        },
+        "todo:7": {
+          "task_key": "todo:7",
+          "task_label": "7",
+          "task_title": "`resize()` 新增 re-clamp 调用 + 执行 7-场景复现矩阵收集证据",
+          "session_id": "opencode:ses_07cb43b15ffeh0a2Ar5EaL7gSi",
+          "agent": "Sisyphus-Junior",
+          "category": "deep",
+          "updated_at": "2026-07-21T06:23:58.154Z",
+          "started_at": "2026-07-21T06:17:15.150Z",
+          "status": "completed",
+          "ended_at": "2026-07-21T06:23:58.154Z",
+          "elapsed_ms": 403004
         }
       }
     }
   },
   "active_work_id": "backpack-scroll-and-mask-fix-legacy",
-  "updated_at": "2026-07-21T06:08:27.593Z"
+  "updated_at": "2026-07-21T06:23:58.154Z"
 }

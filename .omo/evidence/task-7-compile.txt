@@ -1,0 +1,12 @@
+﻿> Task :compileJava
+.\gradlew.bat : 注: 某些输入文件使用或覆盖了已过时的 API。
+所在位置 行:1 字符: 53
++ ... eward\1.21; .\gradlew.bat compileJava --rerun-tasks --console=plain 2 ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (注: 某些输入文件使用或覆盖了已过时的 API。:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+
+BUILD SUCCESSFUL in 1m 24s
+29 actionable tasks: 9 executed, 20 up-to-date

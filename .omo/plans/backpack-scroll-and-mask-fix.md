@@ -647,7 +647,7 @@ Wave FINAL (After ALL tasks):
 
 ---
 
-- [ ] 7. `resize()` 新增 re-clamp 调用 + 执行 7-场景复现矩阵收集证据
+- [x] 7. `resize()` 新增 re-clamp 调用 + 执行 7-场景复现矩阵收集证据
 
   **What to do**:
   - 在 `BackpackScreen.resize()` line 343-351 末尾，`initScrollPanel()` 之后追加：若 `scrollPanel != null`，调 `scrollPanel.reclamp()`（Task 5 引入的同方法）；确保窗口缩放后 scroll证券不出越界
@@ -722,7 +722,7 @@ Wave FINAL (After ALL tasks):
 
 > 4 个 review agent 并行，全部 APPROVE 后向用户呈现结果并等用户 OK。
 
-- [ ] F1. **计划合规审计** — `oracle`
+- [~] F1. **计划合规审计** — `oracle`
   完整读 plan。每个 "Must Have"：读文件 / 触发命令验证实施存在；每个 "Must NOT Have"：grep 搜索禁用模式，违反则 file:line 列出。检查 `.omo/evidence/` 下证据文件是否齐全。比对交付物清单与 plan 一致。
   输出: `Must Have [N/N] | Must NOT Have [N/N] | Tasks [N/N] | VERDICT: APPROVE/REJECT`
 
@@ -730,7 +730,7 @@ Wave FINAL (After ALL tasks):
   运行 `./gradlew compileJava`、`./gradlew build`。审查变更文件含 `as any`/`@ts-ignore`（替换为 Java 等价如 `@SuppressWarnings`）、空 catch、`System.out.println`、注释掉的代码、未用 import。AI slop 检查：过度注释、过度抽象、泛名（temp/data/result）。日志：debug 级别，不能产物线在 informational。
   输出: `Build [PASS/FAIL] | Lint [PASS/FAIL] | Files [N clean/N issues] | VERDICT`
 
-- [ ] F3. **实机真测 QA** — `unspecified-high`
+- [~] F3. **实机真测 QA** — `unspecified-high`
   从 clean state 起，按"复现矩阵"逐个 containerSize 场景执行：连入客户端、`/give` 生成物品、按 B 开包、滚到底、采样像素、截屏、对齐日志。跨任务集成（蒙版与滚动协同工作）。存到 `.omo/evidence/final-qa/`。
   输出: `Scenarios [N/N pass] | Integration [N/N] | Edge Cases [N tested] | VERDICT`
 
