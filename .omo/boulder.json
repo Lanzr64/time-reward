@@ -5,7 +5,7 @@
     "opencode:ses_07d555d2affeIf30LYwsp3mWuk"
   ],
   "plan_name": "backpack-scroll-and-mask-fix",
-  "status": "active",
+  "status": "completed",
   "agent": "atlas",
   "session_origins": {
     "opencode:ses_07d555d2affeIf30LYwsp3mWuk": "direct"
@@ -56,9 +56,11 @@
       "task_title": "**代码质量审阅** — `unspecified-high`",
       "session_id": "opencode:ses_07ca6054affeDKfVRjJpiePg9E",
       "agent": "oracle",
-      "updated_at": "2026-07-21T06:45:03.723Z",
+      "updated_at": "2026-07-21T06:50:26.590Z",
       "started_at": "2026-07-21T06:45:03.723Z",
-      "status": "running"
+      "status": "completed",
+      "ended_at": "2026-07-21T06:50:26.590Z",
+      "elapsed_ms": 322867
     }
   },
   "schema_version": 2,
@@ -67,9 +69,9 @@
       "work_id": "backpack-scroll-and-mask-fix-legacy",
       "active_plan": "D:\\lz_workplace\\java\\lzProject\\time-reward\\1.21\\.omo\\plans\\backpack-scroll-and-mask-fix.md",
       "plan_name": "backpack-scroll-and-mask-fix",
-      "status": "active",
+      "status": "completed",
       "started_at": "2026-07-21T05:31:47Z",
-      "updated_at": "2026-07-21T06:45:03.722Z",
+      "updated_at": "2026-07-21T06:50:26.590Z",
       "session_ids": [
         "opencode:ses_07d555d2affeIf30LYwsp3mWuk"
       ],
@@ -123,13 +125,19 @@
           "task_title": "**代码质量审阅** — `unspecified-high`",
           "session_id": "opencode:ses_07ca6054affeDKfVRjJpiePg9E",
           "agent": "oracle",
-          "updated_at": "2026-07-21T06:45:03.723Z",
+          "updated_at": "2026-07-21T06:50:26.590Z",
           "started_at": "2026-07-21T06:45:03.723Z",
-          "status": "running"
+          "status": "completed",
+          "ended_at": "2026-07-21T06:50:26.590Z",
+          "elapsed_ms": 322867
         }
-      }
+      },
+      "ended_at": "2026-07-21T06:49:50.875Z",
+      "elapsed_ms": 4683875
     }
   },
   "active_work_id": "backpack-scroll-and-mask-fix-legacy",
-  "updated_at": "2026-07-21T06:45:03.722Z"
+  "updated_at": "2026-07-21T06:50:26.590Z",
+  "ended_at": "2026-07-21T06:49:50.875Z",
+  "elapsed_ms": 4683875
 }

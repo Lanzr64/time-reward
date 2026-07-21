@@ -597,16 +597,18 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
 
         /**
          * Iterates over every display slot and assigns screen coordinates based on
-         * the current {@link #scrollDistance} and the active {@link #stackFilter}.
+         * the active {@link #stackFilter}.
          *
-         * <p>Each display slot has a fixed column ({@code index % COLS}) and a virtual
-         * row ({@code index / COLS}) that shifts up as the user scrolls. Slots outside
-         * the viewport are hidden; items that fail the filter are moved far off-screen
-         * to the left.</p>
+         * <p>Each display slot has a fixed column ({@code index % COLS}) and a fixed
+         * Y position based on its displayRow (viewport-relative). Scrolling is
+         * handled by {@link net.lanzr.time_reward.inventory.DynamicScrollSlot}
+         * shifting which actual storage row maps to each displayRow, so slot
+         * positions remain static and only the content mapping changes. Slots
+         * outside the viewport are hidden; items that fail the filter are moved
+         * far off-screen to the left.</p>
          */
         void repositionSlots() {
             visibleSlotsCount = 0;
-            int scrollRowOffset = (int) scrollDistance / SLOT_SIZE;
 
             for (int i = 0; i < TOTAL_DISPLAY_SLOTS; i++) {
                 Slot slot = menu.getSlot(i);
@@ -615,7 +617,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
                 boolean matchesFilter = stackFilter.test(stack);
                 int col = i % COLS;
                 int displayRow = i / COLS;
-                int newY = SLOTS_Y_OFFSET + (displayRow - scrollRowOffset) * SLOT_SIZE;
+                int newY = SLOTS_Y_OFFSET + displayRow * SLOT_SIZE;
 
                 if (!matchesFilter) {
                     // Hide filtered-out items far off-screen to the left
