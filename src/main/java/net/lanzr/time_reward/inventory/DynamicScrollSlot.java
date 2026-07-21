@@ -10,14 +10,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.IntSupplier;
 
 /**
- * A custom Slot that dynamically maps a fixed display index to a container index
- * based on a scroll offset supplied by an {@link IntSupplier}.
+ * 一个自定义槽位，根据{@link IntSupplier}提供的滚动偏移量，
+ * 将固定的显示索引动态映射到容器索引。
  *
- * <p>The display grid is laid out as {@code slotsPerRow} columns &#215; dynamic rows.
- * The scroll offset (in rows) shifts which portion of the backing container is visible.
- * When the offset changes, every slot transparently recalculates its backing index.</p>
+ * <p>显示网格以{@code slotsPerRow}列 × 动态行布局。
+ * 滚动偏移量（行）决定底层容器的哪个部分可见。
+ * 当偏移量变化时，每个槽位会透明地重新计算其底层索引。</p>
  *
- * <p>Pattern follows {@code PaginationContainer.DynamicPageSlot}.</p>
+ * <p>模式遵循{@code PaginationContainer.DynamicPageSlot}。</p>
  */
 public class DynamicScrollSlot extends Slot {
 
@@ -27,12 +27,12 @@ public class DynamicScrollSlot extends Slot {
     private final Container storageContainer;
 
     /**
-     * @param container            the backing {@link Container} to read/write items from
-     * @param displayIndex         0-based index of this slot in the visible grid
-     * @param slotsPerRow          number of columns in the grid (e.g. 12)
-     * @param scrollOffsetSupplier supplies the current scroll row offset
-     * @param x                    screen x position of the slot
-     * @param y                    screen y position of the slot
+     * @param container            用于读写物品的底层{@link Container}
+     * @param displayIndex          该槽位在可见网格中的从0开始的索引
+     * @param slotsPerRow          网格的列数（例如12）
+     * @param scrollOffsetSupplier  提供当前滚动行偏移量的供应器
+     * @param x                    槽位的屏幕x坐标
+     * @param y                    槽位的屏幕y坐标
      */
     public DynamicScrollSlot(Container container, int displayIndex, int slotsPerRow,
                              IntSupplier scrollOffsetSupplier, int x, int y) {
@@ -44,8 +44,7 @@ public class DynamicScrollSlot extends Slot {
     }
 
     /**
-     * Computes the actual index in the backing container based on the display
-     * position and the current scroll offset.
+     * 基于显示位置和当前滚动偏移量计算在底层容器中的实际索引。
      */
     private int getActualIndex() {
         int row = displayIndex / slotsPerRow + scrollOffsetSupplier.getAsInt();
@@ -54,8 +53,7 @@ public class DynamicScrollSlot extends Slot {
     }
 
     /**
-     * @return {@code true} if the computed actual index is within the bounds
-     *         of the backing container
+     * @return 如果计算出的实际索引在底层容器的范围内则返回{@code true}
      */
     private boolean isInRange() {
         return getActualIndex() < storageContainer.getContainerSize();

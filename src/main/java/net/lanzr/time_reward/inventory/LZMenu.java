@@ -12,8 +12,8 @@ import org.jetbrains.annotations.NotNull;
 
 
 public class LZMenu {
-    static final String PATH = "lzFiles";
-    static final String COMMENT_RECORD_PATH = PATH + "/comment-record.json";
+    static final String PATH = "lzFiles"; // LZ文件目录
+    static final String COMMENT_RECORD_PATH = PATH + "/comment-record.json"; // 评论记录文件路径
     static public void openMenu(ServerPlayer player, Container container) {
         player.openMenu(new MenuProvider() {
             @Override

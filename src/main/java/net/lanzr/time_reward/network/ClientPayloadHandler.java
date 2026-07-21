@@ -7,21 +7,21 @@ import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
- * Handles S2C (client-bound) payloads on the client thread.
+ * 在客户端线程上处理S2C（客户端绑定）数据包。
  *
- * <p>All handler methods are invoked via {@link IPayloadContext#enqueueWork} to
- * ensure they run on the main client thread.</p>
+ * <p>所有处理方法都通过{@link IPayloadContext#enqueueWork}调用，
+ * 以确保它们在主客户端线程上运行。</p>
  */
 public final class ClientPayloadHandler {
     private ClientPayloadHandler() {}
 
     /**
-     * Handles the authoritative {@link BackpackStatePayload} from the server.
+     * 处理来自服务端的权威{@link BackpackStatePayload}。
      *
-     * <p>Updates the bound {@link BackpackContainer}'s lastOccupiedRow field when
-     * the open menu matches the payload's containerId, then notifies the active
-     * {@link BackpackScreen} so it can re-evaluate its scroll panel (recreate or
-     * destroy) and re-clamp the scroll distance against the new content height.</p>
+     * <p>当打开的菜单与负载的containerId匹配时，
+     * 更新绑定的{@link BackpackContainer}的lastOccupiedRow字段，
+     * 然后通知活动的{@link BackpackScreen}，使其可以重新评估滚动面板（重建或销毁）
+     * 并根据新的内容高度重新钳制滚动距离。</p>
      */
     public static void handleBackpackState(BackpackStatePayload data, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {

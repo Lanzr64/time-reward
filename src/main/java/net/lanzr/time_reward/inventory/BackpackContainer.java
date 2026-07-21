@@ -21,102 +21,96 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Server-side container for the backpack UI.
+ * 背包UI的服务端容器。
  * <p>
- * Displays a scrollable grid of {@link DynamicScrollSlot}s (12 columns × 4 visible rows)
- * backed by a {@link Container}, plus the player's inventory and hotbar.
- * Supports scrolling, sorting (NAME / COUNT / MOD), and auto-save on close.
+ * 显示由{@link Container}支持的{@link DynamicScrollSlot}的可滚动网格（12列 × 4可见行），
+ * 以及玩家的物品栏和快捷栏。
+ * 支持滚动、排序（名称/数量/模组）和关闭时自动保存。
  * </p>
  *
- * <h3>Construction</h3>
+ * <h3>构造方式</h3>
  * <ul>
- *   <li><b>Server</b>: {@link #BackpackContainer(int, Inventory, Container, int)} —
- *       accepts the real storage container and initial scroll offset.</li>
- *   <li><b>Client</b>: {@link #BackpackContainer(int, Inventory, FriendlyByteBuf)} —
- *       used by {@link net.neoforged.neoforge.common.extensions.IMenuTypeExtension}
- *       (registered in {@link ModMenuTypes}). Reads scroll offset and container size
- *       from the network buffer, creates a dummy container.</li>
+ *   <li><b>服务端</b>: {@link #BackpackContainer(int, Inventory, Container, int)} —
+ *       接收真实的存储容器和初始滚动偏移量。</li>
+ *   <li><b>客户端</b>: {@link #BackpackContainer(int, Inventory, FriendlyByteBuf)} —
+ *       由{@link net.neoforged.neoforge.common.extensions.IMenuTypeExtension}使用
+ *       （在{@link ModMenuTypes}中注册）。从网络缓冲区读取滚动偏移量和容器大小，
+ *       创建一个虚拟容器。</li>
  * </ul>
  *
- * <h3>Slot Layout</h3>
+ * <h3>槽位布局</h3>
  * <pre>
- *   Rows 0-3:  DynamicScrollSlots (48 slots, indices 0-47)
- *   Row 4-6:   Player inventory   (27 slots, indices 48-74)
- *   Row 7:     Hotbar             ( 9 slots, indices 75-83)
+ *   行0-3:  DynamicScrollSlots（48个槽位，索引0-47）
+ *   行4-6:  玩家物品栏        （27个槽位，索引48-74）
+ *   行7:    快捷栏             （ 9个槽位，索引75-83）
  * </pre>
  *
- * <p><b>Scroll offset sync strategy</b>: the offset is a plain {@code int} field.
- * The client screen manages its local offset (initially from the buffer, then
- * updated on scroll input). When the server processes a scroll (via C2S packet),
- * it calls {@link #setScrollOffset(int)} which updates the field and triggers
- * {@link #broadcastChanges()} so all display-slot items are re-sent at the new
- * offset — the client already has the correct offset when items arrive, avoiding
- * a data-vs-slot sync ordering hazard.</p>
+ * <p><b>滚动偏移同步策略</b>：偏移量是一个普通的{@code int}字段。
+ * 客户端界面管理其本地偏移量（初始来自缓冲区，随后在滚动输入时更新）。
+ * 当服务端处理滚动（通过C2S包）时，它调用{@link #setScrollOffset(int)}更新字段
+ * 并触发{@link #broadcastChanges()}，使所有显示槽位的物品在新偏移量下重新发送
+ * —— 客户端在物品到达时已拥有正确的偏移量，避免了数据与槽位同步的顺序竞争风险。</p>
  */
 public class BackpackContainer extends AbstractContainerMenu {
 
-    // ========== Layout Constants ==========
+    // ========== 布局常量 ==========
 
-    /** Number of columns in the scrollable grid. */
+    /** 可滚动网格的列数。 */
     public static final int COLS = 12;
-    /** Number of visible rows in the scrollable grid. */
+    /** 可滚动网格的可见行数。 */
     public static final int MAX_VISIBLE_ROWS = 12;
-    /** Total display slots (12 × MAX_VISIBLE_ROWS). */
+    /** 总显示槽位数（12 × MAX_VISIBLE_ROWS）。 */
     public static final int TOTAL_DISPLAY_SLOTS = COLS * MAX_VISIBLE_ROWS;
-    /** First player-inventory slot index. */
+    /** 玩家物品栏起始槽位索引。 */
     public static final int PLAYER_INV_START = TOTAL_DISPLAY_SLOTS;        // 144
-    /** First hotbar slot index. */
+    /** 快捷栏起始槽位索引。 */
     public static final int HOTBAR_START = PLAYER_INV_START + 27;          // 171
-    /** Total number of slots in this menu. */
+    /** 该菜单的总槽位数。 */
     public static final int TOTAL_SLOTS = HOTBAR_START + 9;                // 180
 
-    // ========== Fields ==========
+    // ========== 字段 ==========
 
     private final Container storageContainer;
     private final Player player;
     private Runnable saveCallback = () -> { };
 
-    /** Current scroll offset in rows. Managed locally on each side. */
+    /** 当前滚动偏移量（行数）。在两侧分别管理。 */
     private int scrollOffset;
 
-    /** Index of the last row (0-based) that contains items, set by server when opening. */
+    /** 包含物品的最后一行索引（从0开始），由服务端在打开时设置。 */
     private int lastOccupiedRow;
 
     /**
-     * Dirty flag set whenever the storage container's occupied-row boundary may
-     * have changed (item added/removed/sorted). The {@link #broadcastChanges()}
-     * override consults this flag to decide whether an O(n) re-scan of the
-     * container is warranted before sending updates to the client. This
-     * dirty-gating ensures the recompute does NOT fire every tick &mdash; only
-     * after a known mutation path (sort, scroll-set, shift-click move).
+     * 当存储容器的已占行边界可能发生变化时（物品添加/移除/排序）设置的脏标记。
+     * {@link #broadcastChanges()}的覆写方法会检查此标记，以决定在向客户端发送更新之前
+     * 是否需要对容器执行O(n)重新扫描。此脏标记门控确保重新计算不会每个tick都触发
+     * &mdash; 仅在已知的变更路径（排序、滚动设置、Shift+点击移动）后触发。
      */
     private boolean lastOccupiedDirty = true;
 
     /**
-     * Cached value of {@link #lastOccupiedRow} that was last shipped to the
-     * viewer via {@link BackpackStatePayload}. Used for delta-detection inside
-     * {@link #broadcastChanges()} so the S2C packet only fires when the value
-     * actually changes, never on every dirty tick.
+     * 上次通过{@link BackpackStatePayload}发送给客户的{@link #lastOccupiedRow}的缓存值。
+     * 用于{@link #broadcastChanges()}中的增量检测，以确保S2C数据包仅在该值实际变化时发送，
+     * 而不会在每个脏tick都发送。
      */
     private int lastSentLastOccupiedRow;
 
     /**
-     * Per-instance counter incremented each time {@link #broadcastChanges()}
-     * invokes {@link #recomputeLastOccupiedRow()}. Logged for QA verification
-     * of dirty-gating cadence &mdash; should NOT increase once per server tick,
-     * only on mutation-triggered broadcasts.
+     * 每次{@link #broadcastChanges()}调用{@link #recomputeLastOccupiedRow()}时递增的实例计数器。
+     * 记录用于QA验证脏标记门控节奏 &mdash; 不应每个服务端tick都增加，
+     * 仅在触发变更的广播时增加。
      */
     private int recomputeCallCount = 0;
 
-    // ========== Constructors ==========
+    // ========== 构造方法 ==========
 
     /**
-     * Server-side constructor.
+     * 服务端构造方法。
      *
-     * @param id             container id
-     * @param playerInventory the opening player's inventory
-     * @param container      the real storage container to read/write items
-     * @param scrollOffset   initial scroll offset (rows)
+     * @param id             容器ID
+     * @param playerInventory 打开玩家的物品栏
+     * @param container      用于读写物品的真实存储容器
+     * @param scrollOffset   初始滚动偏移量（行数）
      */
     public BackpackContainer(int id, Inventory playerInventory, Container container, int scrollOffset) {
         super(ModMenuTypes.get(), id);
@@ -124,22 +118,20 @@ public class BackpackContainer extends AbstractContainerMenu {
         this.storageContainer = container;
         this.scrollOffset = scrollOffset;
         setupSlots(playerInventory);
-        // Seed the server-side lastOccupiedRow field from a fresh scan so the
-        // first broadcastChanges() has no spurious delta to send (the open-time
-        // payload written into the client buffer by ServerPayloadHandler already
-        // carried this same value to the client).
+        // 通过新扫描初始化服务端lastOccupiedRow字段，使得
+        // 第一次broadcastChanges()不会发送虚假增量
+        // （ServerPayloadHandler写入客户端缓冲区的打开时负载已经携带了相同的值）。
         this.lastOccupiedRow = recomputeLastOccupiedRow();
         this.lastSentLastOccupiedRow = this.lastOccupiedRow;
         this.lastOccupiedDirty = false;
     }
 
     /**
-     * Client-side constructor, invoked by {@code IMenuTypeExtension.create()} from
-     * the network buffer.
+     * 客户端构造方法，由{@code IMenuTypeExtension.create()}从网络缓冲区调用。
      *
-     * @param id             container id
-     * @param playerInventory the client player's inventory
-     * @param buf            network buffer containing {@code containerSize} then {@code scrollOffset}
+     * @param id             容器ID
+     * @param playerInventory 客户端玩家的物品栏
+     * @param buf            包含{@code containerSize}和{@code scrollOffset}的网络缓冲区
      */
     public BackpackContainer(int id, Inventory playerInventory, FriendlyByteBuf buf) {
         super(ModMenuTypes.get(), id);
@@ -151,18 +143,18 @@ public class BackpackContainer extends AbstractContainerMenu {
         setupSlots(playerInventory);
     }
 
-    // ========== Slot Layout ==========
+    // ========== 槽位布局 ==========
 
     /**
-     * Creates and adds all slots:
+     * 创建并添加所有槽位：
      * <ol>
-     *   <li>{@code TOTAL_DISPLAY_SLOTS} {@link DynamicScrollSlot}s (visible grid)</li>
-     *   <li>3 rows of player inventory (27 slots)</li>
-     *   <li>1 row of hotbar (9 slots)</li>
+     *   <li>{@code TOTAL_DISPLAY_SLOTS} 个{@link DynamicScrollSlot}（可见网格）</li>
+     *   <li>3行玩家物品栏（27个槽位）</li>
+     *   <li>1行快捷栏（9个槽位）</li>
      * </ol>
      */
     private void setupSlots(Inventory playerInventory) {
-        // ---- Scrollable display grid ----
+        // ---- 可滚动的显示网格 ----
         for (int row = 0; row < MAX_VISIBLE_ROWS; row++) {
             for (int col = 0; col < COLS; col++) {
                 int displayIndex = row * COLS + col;
@@ -173,8 +165,8 @@ public class BackpackContainer extends AbstractContainerMenu {
             }
         }
 
-        // ---- Player inventory (3 rows × 9 cols) ----
-        int playerInvX = 8 + 30; // 8 + PLAYER_INV_X_OFFSET for WIDER_12_SLOT layout
+        // ---- 玩家物品栏（3行 × 9列） ----
+        int playerInvX = 8 + 30; // 8 + PLAYER_INV_X_OFFSET 用于WIDER_12_SLOT布局
         int playerInvY = 18 + MAX_VISIBLE_ROWS * 18 + 14;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
@@ -183,7 +175,7 @@ public class BackpackContainer extends AbstractContainerMenu {
             }
         }
 
-        // ---- Hotbar (1 row × 9 cols) ----
+        // ---- 快捷栏（1行 × 9列） ----
         int hotbarY = playerInvY + 3 * 18 + 4;
         for (int col = 0; col < 9; col++) {
             addSlot(new Slot(playerInventory, col,
@@ -191,10 +183,10 @@ public class BackpackContainer extends AbstractContainerMenu {
         }
     }
 
-    // ========== Scroll Offset Management ==========
+    // ========== 滚动偏移管理 ==========
 
     /**
-     * @return the current scroll offset in rows
+     * @return 当前滚动偏移量（行数）
      */
     public int getScrollOffset() {
         return scrollOffset;
@@ -205,36 +197,31 @@ public class BackpackContainer extends AbstractContainerMenu {
     }
 
     /**
-     * @return the total number of slots in the backing storage container.
-     * Delegates to {@link Container#getContainerSize()}.
+     * @return 底层存储容器的总槽位数。
+     * 委托给{@link Container#getContainerSize()}。
      */
     public int getContainerSize() {
         return storageContainer.getContainerSize();
     }
 
     /**
-     * Directly overwrites the {@code lastOccupiedRow} field <b>without</b> any
-     * broadcast side effects. Intended for client-side re-clamp paths
-     * (e.g. {@code ClientPayloadHandler}) where the caller drives re-clamp
-     * separately after updating this field.
+     * 直接覆写{@code lastOccupiedRow}字段，<b>不</b>产生任何广播副作用。
+     * 用于客户端重新钳位的路径（如{@code ClientPayloadHandler}），
+     * 调用方在更新此字段后单独驱动重新钳位。
      *
-     * @param row the new last-occupied-row value (use {@code -1} to denote
-     *            "container fully empty")
+     * @param row 新的最后占用行值（使用{@code -1}表示"容器完全为空"）
      */
     public void setLastOccupiedRow(int row) {
         this.lastOccupiedRow = row;
     }
 
     /**
-     * Server-side helper that scans {@code storageContainer} from the last
-     * index down to {@code 0}, finds the highest occupied row, updates the
-     * {@link #lastOccupiedRow} field in place, and returns the recomputed
-     * value.
+     * 服务端辅助方法，从最后一个索引向下扫描{@code storageContainer}到{@code 0}，
+     * 找到最高的已占用行，就地更新{@link #lastOccupiedRow}字段，并返回重新计算的值。
      * <p>
-     * Semantics for an empty container: {@code -1} (NOT {@code 0}).
+     * 空容器的语义：{@code -1}（不是{@code 0}）。
      *
-     * @return the recomputed last-occupied-row index, or {@code -1} if the
-     *         container is completely empty
+     * @return 重新计算的最后占用行索引，如果容器完全为空则返回{@code -1}
      */
     public int recomputeLastOccupiedRow() {
         int containerSize = storageContainer.getContainerSize();
@@ -249,49 +236,45 @@ public class BackpackContainer extends AbstractContainerMenu {
     }
 
     /**
-     * Directly sets the scroll offset on the client side (called by the screen on scroll).
-     * This is fast — just a field update — so the client can render immediately before
-     * the server acknowledges the scroll.
+     * 在客户端侧直接设置滚动偏移量（由屏幕在滚动时调用）。
+     * 这很快 &mdash; 仅是一个字段更新 &mdash; 因此客户端可以在服务端确认滚动之前立即渲染。
      */
     public void setClientScrollOffset(int offset) {
         this.scrollOffset = Math.max(0, Math.min(offset, getClientMaxScrollOffset()));
     }
 
     /**
-     * Returns the max scroll offset the client allows, based on lastOccupiedRow
-     * (the actual content extent), NOT the container capacity. This matches the
-     * semantics of {@code BackpackScrollPanel.getContentHeight()}.
+     * 根据lastOccupiedRow（实际内容范围），而非容器容量，返回客户端允许的最大滚动偏移量。
+     * 这与{@code BackpackScrollPanel.getContentHeight()}的语义一致。
      */
     private int getClientMaxScrollOffset() {
         return Math.max(0, lastOccupiedRow + 1 - MAX_VISIBLE_ROWS);
     }
 
     /**
-     * Sets the scroll offset on the server, clamps to the valid range, and immediately
-     * triggers {@link #broadcastChanges()} so that display-slot items are re-sent at
-     * the new offset.
+     * 在服务端设置滚动偏移量，钳位到有效范围，并立即触发{@link #broadcastChanges()}，
+     * 以便显示槽位的物品在新偏移量下重新发送。
      */
     public void setScrollOffset(int offset) {
         this.scrollOffset = clampScrollOffset(offset);
-        // Scroll itself doesn't mutate items, but the subsequent broadcastChanges
-        // may need to ship the current lastOccupiedRow alongside the slot
-        // refresh. Mark dirty cheaply; the re-scan only fires if not already
-        // gated stale (after the scan dirty is cleared, so subsequent ticks
-        // without further mutations do not re-scan).
+        // 滚动本身不会改变物品，但随后的broadcastChanges可能需要
+        // 在刷新槽位的同时发送当前的lastOccupiedRow。
+        // 廉价地标记脏；重新扫描仅在未过时门控时触发
+        // （扫描后脏标记被清除，因此后续无变更的tick不会重新扫描）。
         this.lastOccupiedDirty = true;
         broadcastChanges();
     }
 
     /**
-     * Adjusts the scroll offset by {@code delta} rows (positive = scroll down)
-     * and broadcasts the resulting item changes.
+     * 按{@code delta}行调整滚动偏移量（正值 = 向下滚动）
+     * 并广播由此产生的物品更改。
      */
     public void onScroll(int delta) {
         setScrollOffset(this.scrollOffset + delta);
     }
 
     /**
-     * @return the maximum scroll offset (rows), or 0 if all rows fit on screen
+     * @return 最大滚动偏移量（行数），如果所有行都适合屏幕则返回0
      */
     public int getMaxScrollOffset() {
         int totalRows = (storageContainer.getContainerSize() + COLS - 1) / COLS;
@@ -302,9 +285,9 @@ public class BackpackContainer extends AbstractContainerMenu {
         return Math.max(0, Math.min(offset, getMaxScrollOffset()));
     }
 
-    // ========== Sorting ==========
+    // ========== 排序 ==========
 
-    /** Sort criteria for the backpack contents. */
+    /** 背包内容的排序条件。 */
     public enum SortType {
         NAME,
         COUNT,
@@ -312,21 +295,21 @@ public class BackpackContainer extends AbstractContainerMenu {
     }
 
     /**
-     * Sorts the items in the storage container by the given criterion,
-     * then resets the scroll position to the top and broadcasts changes.
+     * 按给定的条件对存储容器中的物品进行排序，
+     * 然后将滚动位置重置到顶部并广播更改。
      */
     public void sort(SortType type) {
-        // Mark dirty at start so the broadcastChanges call inside
-        // setScrollOffset(0) below will pick up the freshly-sorted layout.
+        // 初始标记脏，使setScrollOffset(0)内部的broadcastChanges
+        // 能够获取到刚排序完的布局。
         this.lastOccupiedDirty = true;
 
-        // Gather all items from the container
+        // 收集容器中的所有物品
         List<ItemStack> items = new ArrayList<>();
         for (int i = 0; i < storageContainer.getContainerSize(); i++) {
             items.add(storageContainer.getItem(i));
         }
 
-        // Separate non-empty items for sorting
+        // 分离非空物品进行排序
         List<ItemStack> nonEmpty = new ArrayList<>();
         for (ItemStack stack : items) {
             if (!stack.isEmpty()) {
@@ -334,30 +317,29 @@ public class BackpackContainer extends AbstractContainerMenu {
             }
         }
 
-        // Build comparator
+        // 构建比较器
         Comparator<ItemStack> comparator = buildSortComparator(type);
         nonEmpty.sort(comparator);
 
-        // Write sorted items back to the container
+        // 将排序后的物品写回容器
         int idx = 0;
         for (ItemStack stack : nonEmpty) {
             storageContainer.setItem(idx++, stack.copy());
         }
-        // Fill remaining slots with empty stacks
+        // 用空物品堆填满剩余槽位
         for (; idx < storageContainer.getContainerSize(); idx++) {
             storageContainer.setItem(idx, ItemStack.EMPTY);
         }
 
-        // Reset scroll to top (triggers broadcastChanges internally — that call
-        // will recompute lastOccupiedRow once because we marked dirty above and
-        // send a BackpackStatePayload to the player if delta detected).
+        // 重置滚动到顶部（内部触发broadcastChanges —— 该调用将
+        // 重新计算一次lastOccupiedRow，因为我们上面标记了脏标记，
+        // 如果检测到增量则向玩家发送BackpackStatePayload）。
         setScrollOffset(0);
 
-        // Final authoritative recompute + delta-send at sort end. This is
-        // redundant with the broadcast inside setScrollOffset(0) but is the
-        // canonical "sort result" anchor — the delta-detection against
-        // lastSentLastOccupiedRow guarantees we only ship one BackpackStatePayload
-        // for the whole sort operation.
+        // 排序结束时的最终权威重新计算 + 增量发送。这与
+        // setScrollOffset(0)内部的broadcast重复，但它是
+        // 规范的"排序结果"锚点 —— 针对lastSentLastOccupiedRow的增量检测
+        // 保证整个排序操作只发送一个BackpackStatePayload。
         int newRow = recomputeLastOccupiedRow();
         TimeReward.LOGGER.info(
                 "[BackpackContainer] recompute result post-sort lastOccupiedRow={}",
@@ -387,7 +369,7 @@ public class BackpackContainer extends AbstractContainerMenu {
         }
     }
 
-    // ========== Shift-Click (Quick Move) ==========
+    // ==========  Shift+点击（快速移动） ==========
 
     @Override
     public ItemStack quickMoveStack(Player player, int slotIndex) {
@@ -404,12 +386,12 @@ public class BackpackContainer extends AbstractContainerMenu {
         ItemStack result = stackInSlot.copy();
 
         if (slotIndex < PLAYER_INV_START) {
-            // Display grid → player inventory
+            // 显示网格 → 玩家物品栏
             if (!moveItemStackTo(stackInSlot, PLAYER_INV_START, TOTAL_SLOTS, true)) {
                 return ItemStack.EMPTY;
             }
         } else {
-            // Player inventory → display grid
+            // 玩家物品栏 → 显示网格
             if (!moveItemStackTo(stackInSlot, 0, TOTAL_DISPLAY_SLOTS, false)) {
                 return ItemStack.EMPTY;
             }
@@ -421,31 +403,26 @@ public class BackpackContainer extends AbstractContainerMenu {
             slot.setChanged();
         }
 
-        // Either direction mutates the backing storageContainer's occupied-row
-        // boundary (item removed when source is in displayGrid; item added when
-        // destination is in displayGrid). Mark dirty so the next
-        // broadcastChanges() (invoked by the vanilla container-sync tick after
-        // this click) re-scans and pushes BackpackStatePayload if changed.
+        // 无论哪个方向都会改变底层storageContainer的已占行边界
+        // （源在显示网格时移除物品；目标在显示网格时添加物品）。
+        // 标记脏，使得下一次broadcastChanges()（在此点击后的原版容器同步tick中调用）
+        // 重新扫描并在发生变化时推送BackpackStatePayload。
         this.lastOccupiedDirty = true;
 
         return result;
     }
 
-    // ========== Broadcast / Sync ==========
+    // ========== 广播/同步 ==========
 
     /**
-     * Vanilla container-sync hook. Delegates to {@code super} first so all
-     * standard slot/state sync takes place, then consults the
-     * {@link #lastOccupiedDirty} flag to decide whether an O(n) re-scan of the
-     * storage container is warranted. When the recomputed lastOccupiedRow
-     * differs from the last value shipped to the viewer
-     * ({@link #lastSentLastOccupiedRow}), a {@link BackpackStatePayload} is
-     * sent.
+     * 原版容器同步钩子。先委托给{@code super}以执行所有标准槽位/状态同步，
+     * 然后检查{@link #lastOccupiedDirty}标记，以决定是否需要对存储容器执行
+     * O(n)重新扫描。当重新计算的lastOccupiedRow与上次发送给查看器的值
+     * ({@link #lastSentLastOccupiedRow})不同时，发送{@link BackpackStatePayload}。
      *
-     * <p>Dirty-gating ensures this scan does NOT run every tick &mdash; only on
-     * ticks immediately following a known mutation path
+     * <p>脏标记门控确保此扫描不会每个tick都运行 &mdash; 仅在已知的变更路径
      * ({@link #sort(SortType)}, {@link #setScrollOffset(int)},
-     * {@link #quickMoveStack(Player, int)}).</p>
+     * {@link #quickMoveStack(Player, int)})之后的tick上运行。</p>
      */
     @Override
     public void broadcastChanges() {
@@ -465,10 +442,9 @@ public class BackpackContainer extends AbstractContainerMenu {
     }
 
     /**
-     * Ships a {@link BackpackStatePayload} carrying the new lastOccupiedRow to
-     * this container's viewer. No-op when the viewer is not a server player
-     * (e.g. the client-side dummy instance of this menu). Per spec, only the
-     * single owning viewer is notified &mdash; do not broadcast to other players.
+     * 向此容器的查看者发送携带新lastOccupiedRow的{@link BackpackStatePayload}。
+     * 当查看者不是服务端玩家时（例如该菜单的客户端虚拟实例），不执行操作。
+     * 根据规范，仅通知单个所属查看者 &mdash; 不广播给其他玩家。
      */
     private void sendBackpackStateToPlayer(int row) {
         if (this.player instanceof ServerPlayer sp) {
@@ -476,7 +452,7 @@ public class BackpackContainer extends AbstractContainerMenu {
         }
     }
 
-    // ========== Lifecycle ==========
+    // ========== 生命周期 ==========
 
     @Override
     public void removed(Player player) {
@@ -489,17 +465,17 @@ public class BackpackContainer extends AbstractContainerMenu {
         return true;
     }
 
-    // ========== Callbacks & Accessors ==========
+    // ========== 回调和访问器 ==========
 
     /**
-     * Registers a callback invoked when the container is closed.
-     * Typically used to persist the container to disk via {@link net.lanzr.time_reward.save.PlayerRewardManager}.
+     * 注册一个在容器关闭时调用的回调。
+     * 通常用于通过{@link net.lanzr.time_reward.save.PlayerRewardManager}将容器持久化到磁盘。
      */
     public void setSaveCallback(Runnable callback) {
         this.saveCallback = callback;
     }
 
-    /** Returns the backing storage container. */
+    /** 返回底层的存储容器。 */
     public Container getStorageContainer() {
         return storageContainer;
     }

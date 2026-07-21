@@ -19,26 +19,26 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import java.util.UUID;
 
 /**
- * Handles C2S (server-bound) payloads on the server thread.
+ * 在服务端线程上处理C2S（服务端绑定）数据包。
  *
- * <p>All handler methods are invoked via {@link IPayloadContext#enqueueWork} to
- * ensure they run on the main server thread.</p>
+ * <p>所有处理方法都通过{@link IPayloadContext#enqueueWork}调用，
+ * 以确保它们在主服务端线程上运行。</p>
  */
 public final class ServerPayloadHandler {
     private ServerPayloadHandler() {}
 
     /**
-     * Handles a client request to open the backpack reward UI.
+     * 处理客户端打开背包奖励UI的请求。
      *
-     * <p>Loads or creates the player's reward container based on their current
-     * reward level, then opens a {@link BackpackContainer} menu with a save
-     * callback that persists changes when the container closes.</p>
+     * <p>根据玩家当前的奖励等级加载或创建奖励容器，
+     * 然后打开一个{@link BackpackContainer}菜单，
+     * 并带有一个在容器关闭时持久化更改的保存回调。</p>
      */
     public static void handleOpenBackpack(OpenBackpackPayload data, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
             if (!(ctx.player() instanceof ServerPlayer player)) return;
 
-            // Get current reward level from player comments (same as /tyj-reward get)
+            // 从玩家评论获取当前奖励等级（与/tyj-reward get相同）
             CommentInfo commentInfo = new CommentInfo();
             int haveReward = PlayerCommentTools.getPlayerComment(player.getName().getString(), commentInfo);
             int currentLevel = haveReward >= 0 ? Math.max(commentInfo.level, 0) : 0;
@@ -46,7 +46,7 @@ public final class ServerPayloadHandler {
             UUID playerUUID = player.getUUID();
             int storedLevel = PlayerRewardManager.getStoredLevel(playerUUID);
 
-            // Use the higher of current level and stored level for container size
+            // 使用当前等级和存储等级中的较高者作为容器大小
             int effectiveLevel = Math.max(currentLevel, storedLevel);
             int expectedSlots = Math.min(effectiveLevel * 15, 900);
 
@@ -57,10 +57,10 @@ public final class ServerPayloadHandler {
 
             final int saveLevel = effectiveLevel;
 
-            // Empty-container sentinel is -1 (NOT 0) so the client's
-            // contentRows = max(0, lastOccupiedRow + 1) collapses to 0 and no
-            // scroll panel is created. Server-side BackpackContainer also seeds
-            // its field the same way via recomputeLastOccupiedRow() in its ctor.
+            // 空容器的哨兵值为-1（不是0），因此客户端的
+            // contentRows = max(0, lastOccupiedRow + 1)会折叠为0并且不会创建
+            // 滚动面板。服务端的BackpackContainer也通过其构造方法中的
+            // recomputeLastOccupiedRow()以相同方式初始化该字段。
             int lastOccupiedRow = -1;
             for (int i = container.getContainerSize() - 1; i >= 0; i--) {
                 if (!container.getItem(i).isEmpty()) {
@@ -102,11 +102,10 @@ public final class ServerPayloadHandler {
     }
 
     /**
-     * Handles a client scroll-offset update for the open backpack container.
+     * 处理客户端对打开的背包容器的滚动偏移量更新。
      *
-     * <p>Verifies that the player's currently open container is a
-     * {@link BackpackContainer}, then updates its scroll offset and
-     * synchronises the changes back to the client.</p>
+     * <p>验证玩家当前打开的容器是{@link BackpackContainer}，
+     * 然后更新其滚动偏移量并将更改同步回客户端。</p>
      */
     public static void handleScrollChange(ScrollChangePayload data, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
@@ -120,11 +119,10 @@ public final class ServerPayloadHandler {
     }
 
     /**
-     * Handles a client sort request for the open backpack container.
+     * 处理客户端对打开的背包容器的排序请求。
      *
-     * <p>Verifies that the player's currently open container is a
-     * {@link BackpackContainer}, then applies the requested sort order and
-     * synchronises the changes back to the client.</p>
+     * <p>验证玩家当前打开的容器是{@link BackpackContainer}，
+     * 然后应用请求的排序顺序并将更改同步回客户端。</p>
      */
     public static void handleSort(SortPayload data, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
