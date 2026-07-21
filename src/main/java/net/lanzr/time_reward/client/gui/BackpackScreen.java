@@ -1,6 +1,7 @@
 package net.lanzr.time_reward.client.gui;
 
 import com.mojang.blaze3d.vertex.Tesselator;
+import net.lanzr.time_reward.TimeReward;
 import net.lanzr.time_reward.inventory.BackpackContainer;
 import net.lanzr.time_reward.network.ScrollChangePayload;
 import net.lanzr.time_reward.network.SortPayload;
@@ -292,6 +293,27 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
         }
     }
 
+    /**
+     * Called when the authoritative {@code lastOccupiedRow} of the bound container
+     * changes (typically via the S2C {@code BackpackStatePayload}).
+     *
+     * <p>Re-evaluates whether a scroll panel should exist (it may have been created
+     * when the container had many items, and now must be destroyed if the container
+     * shrinks below the visible area), re-clamps the scroll distance against the new
+     * content height, and finally repositions all display slots. The scroll distance
+     * itself is NOT back-synced to the server — the client remains the source-of-truth
+     * for the current scroll row position; only its bounds are tightened here.</p>
+     */
+    public void onLastOccupiedRowChanged() {
+        TimeReward.LOGGER.info("[BackpackScreen-Diag] onLastOccupiedRowChanged() called, scrollPanel={}",
+                scrollPanel != null ? "non-null" : "null");
+        initScrollPanel();
+        if (scrollPanel != null) {
+            scrollPanel.reclamp();
+        }
+        updateSlotsPosition();
+    }
+
     // ======================== Background Rendering ========================
 
     @Override
@@ -337,15 +359,32 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
             renderedY += chunkRows;
         }
 
-        // Dim rows beyond the last occupied row to visually distinguish empty slots
-        int lastOccupiedRow = menu.getLastOccupiedRow();
-        int firstEmptyRow = lastOccupiedRow + 1;
-        if (firstEmptyRow < visibleRows) {
-            int dimX = leftPos + SLOTS_X_OFFSET;
-            int dimY = topPos + SLOTS_Y_OFFSET + firstEmptyRow * SLOT_SIZE;
-            int dimWidth = COLS * SLOT_SIZE;
-            int dimHeight = (visibleRows - firstEmptyRow) * SLOT_SIZE;
-            guiGraphics.fill(dimX, dimY, dimX + dimWidth, dimY + dimHeight, 0x80000000);
+        // Cell-level mask: darken each cell whose actualIndex >= containerSize.
+        // Mask coordinates are viewport-relative (move with cells, not with window).
+        int containerSize = menu.getContainerSize();
+        int scrollRowOffset = (scrollPanel != null) ? scrollPanel.getScrollRowOffset() : 0;
+        for (int viewportRow = 0; viewportRow < visibleRows; viewportRow++) {
+            int absRow = scrollRowOffset + viewportRow;
+            int absRowStart = absRow * COLS;
+            // fast path: whole row out-of-range → single fill rect
+            if (absRowStart >= containerSize) {
+                int cellX = leftPos + SLOTS_X_OFFSET;
+                int cellY = topPos + SLOTS_Y_OFFSET + viewportRow * SLOT_SIZE;
+                int rowWidth = COLS * SLOT_SIZE;
+                guiGraphics.fill(cellX, cellY, cellX + rowWidth, cellY + SLOT_SIZE, 0x80000000);
+                continue;
+            }
+            // partial row → per-cell fill for out-of-range cells in this row
+            int absRowEnd = absRowStart + COLS;
+            if (absRowEnd > containerSize) {
+                int firstOutOfRangeCol = containerSize - absRowStart;
+                for (int col = firstOutOfRangeCol; col < COLS; col++) {
+                    int cellX = leftPos + SLOTS_X_OFFSET + col * SLOT_SIZE;
+                    int cellY = topPos + SLOTS_Y_OFFSET + viewportRow * SLOT_SIZE;
+                    guiGraphics.fill(cellX, cellY, cellX + SLOT_SIZE, cellY + SLOT_SIZE, 0x80000000);
+                }
+            }
+            // else: entire row in-range — no mask
         }
     }
 
@@ -573,6 +612,29 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
          */
         public int getMaxScrollDiag() {
             return getContentHeight() - (height - border);
+        }
+
+        /**
+         * Forces {@code scrollDistance} back within the valid [0, maxScroll] range
+         * after the panel's content height has changed (e.g. when the server pushes
+         * a new {@code lastOccupiedRow}).
+         *
+         * <p>Mirrors NeoForge's private {@code ScrollPanel.getMaxScroll()} via the
+         * accessible {@code getContentHeight()} override and the protected
+         * {@code height}/{@code border} fields. Logs when the clamp actually moves
+         * the distance to aid diagnosis. Does NOT reposition slots — the caller is
+         * responsible for invoking {@link #repositionSlots()} afterwards so the
+         * position update and any downstream server-notification stay coherent.</p>
+         */
+        void reclamp() {
+            int maxScroll = getContentHeight() - (height - border);
+            float oldDist = scrollDistance;
+            scrollDistance = Math.max(0, Math.min(scrollDistance, maxScroll));
+            if ((int) oldDist != (int) scrollDistance) {
+                TimeReward.LOGGER.info(
+                        "[BackpackScreen-Diag] scroll clamped from {} to {} (new max={})",
+                        oldDist, scrollDistance, maxScroll);
+            }
         }
 
         /** Public diag wrapper exposing the protected {@code getContentHeight()} value. */

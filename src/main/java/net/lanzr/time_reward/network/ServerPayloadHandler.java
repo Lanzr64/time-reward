@@ -57,12 +57,20 @@ public final class ServerPayloadHandler {
 
             final int saveLevel = effectiveLevel;
 
-            int lastOccupiedRow = 0;
+            // Empty-container sentinel is -1 (NOT 0) so the client's
+            // contentRows = max(0, lastOccupiedRow + 1) collapses to 0 and no
+            // scroll panel is created. Server-side BackpackContainer also seeds
+            // its field the same way via recomputeLastOccupiedRow() in its ctor.
+            int lastOccupiedRow = -1;
             for (int i = container.getContainerSize() - 1; i >= 0; i--) {
                 if (!container.getItem(i).isEmpty()) {
                     lastOccupiedRow = i / BackpackContainer.COLS;
                     break;
                 }
+            }
+            if (lastOccupiedRow == -1) {
+                TimeReward.LOGGER.info(
+                        "[BackpackContainer] handleOpenBackpack empty container lastOccupiedRow=-1");
             }
 
             final int finalLastOccupiedRow = lastOccupiedRow;

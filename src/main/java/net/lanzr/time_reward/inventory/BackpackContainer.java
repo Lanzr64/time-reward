@@ -1,8 +1,11 @@
 package net.lanzr.time_reward.inventory;
 
+import net.lanzr.time_reward.TimeReward;
 import net.lanzr.time_reward.init.ModMenuTypes;
+import net.lanzr.time_reward.network.BackpackStatePayload;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -10,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -80,11 +84,29 @@ public class BackpackContainer extends AbstractContainerMenu {
 
     /**
      * Dirty flag set whenever the storage container's occupied-row boundary may
-     * have changed (item added/removed/sorted). A future {@code broadcastChanges()}
-     * override will consult this flag to decide whether an O(n) re-scan of the
-     * container is warranted before sending updates to the client.
+     * have changed (item added/removed/sorted). The {@link #broadcastChanges()}
+     * override consults this flag to decide whether an O(n) re-scan of the
+     * container is warranted before sending updates to the client. This
+     * dirty-gating ensures the recompute does NOT fire every tick &mdash; only
+     * after a known mutation path (sort, scroll-set, shift-click move).
      */
     private boolean lastOccupiedDirty = true;
+
+    /**
+     * Cached value of {@link #lastOccupiedRow} that was last shipped to the
+     * viewer via {@link BackpackStatePayload}. Used for delta-detection inside
+     * {@link #broadcastChanges()} so the S2C packet only fires when the value
+     * actually changes, never on every dirty tick.
+     */
+    private int lastSentLastOccupiedRow;
+
+    /**
+     * Per-instance counter incremented each time {@link #broadcastChanges()}
+     * invokes {@link #recomputeLastOccupiedRow()}. Logged for QA verification
+     * of dirty-gating cadence &mdash; should NOT increase once per server tick,
+     * only on mutation-triggered broadcasts.
+     */
+    private int recomputeCallCount = 0;
 
     // ========== Constructors ==========
 
@@ -102,6 +124,13 @@ public class BackpackContainer extends AbstractContainerMenu {
         this.storageContainer = container;
         this.scrollOffset = scrollOffset;
         setupSlots(playerInventory);
+        // Seed the server-side lastOccupiedRow field from a fresh scan so the
+        // first broadcastChanges() has no spurious delta to send (the open-time
+        // payload written into the client buffer by ServerPayloadHandler already
+        // carried this same value to the client).
+        this.lastOccupiedRow = recomputeLastOccupiedRow();
+        this.lastSentLastOccupiedRow = this.lastOccupiedRow;
+        this.lastOccupiedDirty = false;
     }
 
     /**
@@ -235,6 +264,12 @@ public class BackpackContainer extends AbstractContainerMenu {
      */
     public void setScrollOffset(int offset) {
         this.scrollOffset = clampScrollOffset(offset);
+        // Scroll itself doesn't mutate items, but the subsequent broadcastChanges
+        // may need to ship the current lastOccupiedRow alongside the slot
+        // refresh. Mark dirty cheaply; the re-scan only fires if not already
+        // gated stale (after the scan dirty is cleared, so subsequent ticks
+        // without further mutations do not re-scan).
+        this.lastOccupiedDirty = true;
         broadcastChanges();
     }
 
@@ -272,6 +307,10 @@ public class BackpackContainer extends AbstractContainerMenu {
      * then resets the scroll position to the top and broadcasts changes.
      */
     public void sort(SortType type) {
+        // Mark dirty at start so the broadcastChanges call inside
+        // setScrollOffset(0) below will pick up the freshly-sorted layout.
+        this.lastOccupiedDirty = true;
+
         // Gather all items from the container
         List<ItemStack> items = new ArrayList<>();
         for (int i = 0; i < storageContainer.getContainerSize(); i++) {
@@ -300,8 +339,25 @@ public class BackpackContainer extends AbstractContainerMenu {
             storageContainer.setItem(idx, ItemStack.EMPTY);
         }
 
-        // Reset scroll to top (triggers broadcastChanges internally)
+        // Reset scroll to top (triggers broadcastChanges internally — that call
+        // will recompute lastOccupiedRow once because we marked dirty above and
+        // send a BackpackStatePayload to the player if delta detected).
         setScrollOffset(0);
+
+        // Final authoritative recompute + delta-send at sort end. This is
+        // redundant with the broadcast inside setScrollOffset(0) but is the
+        // canonical "sort result" anchor — the delta-detection against
+        // lastSentLastOccupiedRow guarantees we only ship one BackpackStatePayload
+        // for the whole sort operation.
+        int newRow = recomputeLastOccupiedRow();
+        TimeReward.LOGGER.info(
+                "[BackpackContainer] recompute result post-sort lastOccupiedRow={}",
+                newRow);
+        if (newRow != lastSentLastOccupiedRow) {
+            lastSentLastOccupiedRow = newRow;
+            sendBackpackStateToPlayer(newRow);
+        }
+        this.lastOccupiedDirty = false;
     }
 
     private static Comparator<ItemStack> buildSortComparator(SortType type) {
@@ -356,7 +412,59 @@ public class BackpackContainer extends AbstractContainerMenu {
             slot.setChanged();
         }
 
+        // Either direction mutates the backing storageContainer's occupied-row
+        // boundary (item removed when source is in displayGrid; item added when
+        // destination is in displayGrid). Mark dirty so the next
+        // broadcastChanges() (invoked by the vanilla container-sync tick after
+        // this click) re-scans and pushes BackpackStatePayload if changed.
+        this.lastOccupiedDirty = true;
+
         return result;
+    }
+
+    // ========== Broadcast / Sync ==========
+
+    /**
+     * Vanilla container-sync hook. Delegates to {@code super} first so all
+     * standard slot/state sync takes place, then consults the
+     * {@link #lastOccupiedDirty} flag to decide whether an O(n) re-scan of the
+     * storage container is warranted. When the recomputed lastOccupiedRow
+     * differs from the last value shipped to the viewer
+     * ({@link #lastSentLastOccupiedRow}), a {@link BackpackStatePayload} is
+     * sent.
+     *
+     * <p>Dirty-gating ensures this scan does NOT run every tick &mdash; only on
+     * ticks immediately following a known mutation path
+     * ({@link #sort(SortType)}, {@link #setScrollOffset(int)},
+     * {@link #quickMoveStack(Player, int)}).</p>
+     */
+    @Override
+    public void broadcastChanges() {
+        super.broadcastChanges();
+        if (this.lastOccupiedDirty) {
+            int row = recomputeLastOccupiedRow();
+            recomputeCallCount++;
+            TimeReward.LOGGER.info(
+                    "[BackpackContainer] recompute-call-count n={} row={}",
+                    recomputeCallCount, row);
+            if (row != lastSentLastOccupiedRow) {
+                lastSentLastOccupiedRow = row;
+                sendBackpackStateToPlayer(row);
+            }
+            this.lastOccupiedDirty = false;
+        }
+    }
+
+    /**
+     * Ships a {@link BackpackStatePayload} carrying the new lastOccupiedRow to
+     * this container's viewer. No-op when the viewer is not a server player
+     * (e.g. the client-side dummy instance of this menu). Per spec, only the
+     * single owning viewer is notified &mdash; do not broadcast to other players.
+     */
+    private void sendBackpackStateToPlayer(int row) {
+        if (this.player instanceof ServerPlayer sp) {
+            PacketDistributor.sendToPlayer(sp, new BackpackStatePayload(containerId, row));
+        }
     }
 
     // ========== Lifecycle ==========

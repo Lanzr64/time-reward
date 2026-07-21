@@ -1,10 +1,89 @@
 {
-    "active_plan":  "D:\\lz_workplace\\java\\lzProject\\time-reward\\1.21\\.omo\\plans\\backpack-ui-migration.md",
-    "started_at":  "2026-07-20T03:50:00.000Z",
-    "session_ids":  [
-                        "opencode:ses_0829ff796ffeYSZEiPN8FDIpCO"
-                    ],
-    "plan_name":  "backpack-ui-migration",
-    "status":  "completed",
-    "agent":  "atlas"
+  "active_plan": "D:\\lz_workplace\\java\\lzProject\\time-reward\\1.21\\.omo\\plans\\backpack-scroll-and-mask-fix.md",
+  "started_at": "2026-07-21T05:31:47Z",
+  "session_ids": [
+    "opencode:ses_07d555d2affeIf30LYwsp3mWuk"
+  ],
+  "plan_name": "backpack-scroll-and-mask-fix",
+  "status": "active",
+  "agent": "atlas",
+  "session_origins": {
+    "opencode:ses_07d555d2affeIf30LYwsp3mWuk": "direct"
+  },
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "加日志探针确认 Bug 1 实际触发根因",
+      "session_id": "opencode:ses_07cd6644cffei94w2gS8iv07M1",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-07-21T05:54:01.307Z",
+      "started_at": "2026-07-21T05:50:11.145Z",
+      "status": "completed",
+      "ended_at": "2026-07-21T05:54:01.307Z",
+      "elapsed_ms": 230162
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "服务端 sort / item mutation 后重算 `lastOccupiedRow` 并通过 `BackpackStatePayload` 下发客户端",
+      "session_id": "opencode:ses_07cc13163ffecm7MQ9drPXbzS0",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-07-21T06:08:27.593Z",
+      "started_at": "2026-07-21T06:05:48.811Z",
+      "status": "completed",
+      "ended_at": "2026-07-21T06:08:27.593Z",
+      "elapsed_ms": 158782
+    }
+  },
+  "schema_version": 2,
+  "works": {
+    "backpack-scroll-and-mask-fix-legacy": {
+      "work_id": "backpack-scroll-and-mask-fix-legacy",
+      "active_plan": "D:\\lz_workplace\\java\\lzProject\\time-reward\\1.21\\.omo\\plans\\backpack-scroll-and-mask-fix.md",
+      "plan_name": "backpack-scroll-and-mask-fix",
+      "status": "active",
+      "started_at": "2026-07-21T05:31:47Z",
+      "updated_at": "2026-07-21T06:08:27.593Z",
+      "session_ids": [
+        "opencode:ses_07d555d2affeIf30LYwsp3mWuk"
+      ],
+      "session_origins": {
+        "opencode:ses_07d555d2affeIf30LYwsp3mWuk": "direct"
+      },
+      "agent": "atlas",
+      "task_sessions": {
+        "todo:1": {
+          "task_key": "todo:1",
+          "task_label": "1",
+          "task_title": "加日志探针确认 Bug 1 实际触发根因",
+          "session_id": "opencode:ses_07cd6644cffei94w2gS8iv07M1",
+          "agent": "Sisyphus-Junior",
+          "category": "deep",
+          "updated_at": "2026-07-21T05:54:01.307Z",
+          "started_at": "2026-07-21T05:50:11.145Z",
+          "status": "completed",
+          "ended_at": "2026-07-21T05:54:01.307Z",
+          "elapsed_ms": 230162
+        },
+        "todo:4": {
+          "task_key": "todo:4",
+          "task_label": "4",
+          "task_title": "服务端 sort / item mutation 后重算 `lastOccupiedRow` 并通过 `BackpackStatePayload` 下发客户端",
+          "session_id": "opencode:ses_07cc13163ffecm7MQ9drPXbzS0",
+          "agent": "Sisyphus-Junior",
+          "category": "deep",
+          "updated_at": "2026-07-21T06:08:27.593Z",
+          "started_at": "2026-07-21T06:05:48.811Z",
+          "status": "completed",
+          "ended_at": "2026-07-21T06:08:27.593Z",
+          "elapsed_ms": 158782
+        }
+      }
+    }
+  },
+  "active_work_id": "backpack-scroll-and-mask-fix-legacy",
+  "updated_at": "2026-07-21T06:08:27.593Z"
 }

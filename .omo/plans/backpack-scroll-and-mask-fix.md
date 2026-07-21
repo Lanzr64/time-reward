@@ -378,7 +378,7 @@ Wave FINAL (After ALL tasks):
 
 ---
 
-- [ ] 4. 服务端 sort / item mutation 后重算 `lastOccupiedRow` 并通过 `BackpackStatePayload` 下发客户端
+- [x] 4. 服务端 sort / item mutation 后重算 `lastOccupiedRow` 并通过 `BackpackStatePayload` 下发客户端
 
   **What to do**:
   - 在 `BackpackContainer.sort()` 末尾（行 252 `setScrollOffset(0)` 之后）调 `int newRow = recomputeLastOccupiedRow()`，然后向玩家发 `BackpackStatePayload(getId(), newRow)`（用 `PacketDistributor.sendToPlayer(player, BackpackStatePayload)` 或同等）
@@ -466,7 +466,7 @@ Wave FINAL (After ALL tasks):
 
 ---
 
-- [ ] 5. `ClientPayloadHandler.handleBackpackState` 实现 + 客户端 re-clamp `scrollDistance`
+- [x] 5. `ClientPayloadHandler.handleBackpackState` 实现 + 客户端 re-clamp `scrollDistance`
 
   **What to do**:
   - 在 `ClientPayloadHandler.handleBackpackState` 内 `ctx.enqueueWork()`：
@@ -533,7 +533,7 @@ Wave FINAL (After ALL tasks):
 
 ---
 
-- [ ] 6. 重写 `renderSlotCellBackgrounds()` 为 cell-级蒙版，按 `actualIndex >= containerSize` 决策
+- [x] 6. 重写 `renderSlotCellBackgrounds()` 为 cell-级蒙版，按 `actualIndex >= containerSize` 决策
 
   **What to do**:
   - 删除 `renderSlotCellBackgrounds()` 现有"行末整行 dim"块（行 328-337）
