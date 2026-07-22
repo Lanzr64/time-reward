@@ -97,6 +97,9 @@ public final class ServerPayloadHandler {
                 buf.writeInt(container.getContainerSize());
                 buf.writeInt(0);
                 buf.writeInt(finalLastOccupiedRow);
+                for (int i = 0; i < container.getContainerSize(); i++) {
+                    buf.writeItem(container.getItem(i));
+                }
             });
         });
     }
