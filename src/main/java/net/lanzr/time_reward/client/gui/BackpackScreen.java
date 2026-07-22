@@ -402,6 +402,9 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
+        // NeoForge's patched AbstractContainerScreen.render() omits renderTooltip(),
+        // so we must call it here for slot hover tooltips to show.
+        super.renderTooltip(guiGraphics, mouseX, mouseY);
 
         // Render the search box on top (high z-level to avoid being clipped)
         if (searchBox != null) {
