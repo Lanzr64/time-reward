@@ -544,15 +544,15 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
         public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
             boolean handled = super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
             if (handled) {
-                updateSlotsPosition();
-                // Notify the server about the new scroll offset
+                // Sync the client-side scrollOffset FIRST so
+                // DynamicScrollSlot.getActualIndex() uses the correct offset
+                // before repositioning slots and notifying the server.
                 int rowOffset = (int) scrollDistance / SLOT_SIZE;
+                menu.setClientScrollOffset(rowOffset);
+                // Notify the server about the new scroll offset
                 PacketDistributor.sendToServer(
                         new ScrollChangePayload(menu.containerId, rowOffset));
-                // Sync the client-side scrollOffset immediately so
-                // DynamicScrollSlot.getActualIndex() uses the correct offset
-                // before the server acknowledges the scroll.
-                menu.setClientScrollOffset(rowOffset);
+                updateSlotsPosition();
             }
             return handled;
         }
@@ -586,6 +586,13 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
             boolean handled = super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
             if (handled) {
                 updateSlotsPosition();
+                // Sync the client-side scrollOffset immediately so
+                // DynamicScrollSlot.getActualIndex() uses the correct offset
+                // before the server acknowledges the scroll.
+                int rowOffset = (int) scrollDistance / SLOT_SIZE;
+                menu.setClientScrollOffset(rowOffset);
+                PacketDistributor.sendToServer(
+                        new ScrollChangePayload(menu.containerId, rowOffset));
             }
             return handled;
         }
