@@ -551,9 +551,9 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
                 // before repositioning slots and notifying the server.
                 int rowOffset = (int) scrollDistance / SLOT_SIZE;
                 menu.setClientScrollOffset(rowOffset);
-                // Notify the server about the new scroll offset
+                // Notify the server about the new scroll offset and visible rows
                 PacketDistributor.sendToServer(
-                        new ScrollChangePayload(menu.containerId, rowOffset));
+                        new ScrollChangePayload(menu.containerId, menu.getScrollOffset(), visibleRows));
                 updateSlotsPosition();
             }
             return handled;
@@ -594,7 +594,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
                 int rowOffset = (int) scrollDistance / SLOT_SIZE;
                 menu.setClientScrollOffset(rowOffset);
                 PacketDistributor.sendToServer(
-                        new ScrollChangePayload(menu.containerId, rowOffset));
+                        new ScrollChangePayload(menu.containerId, menu.getScrollOffset(), visibleRows));
             }
             return handled;
         }

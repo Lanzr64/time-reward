@@ -112,6 +112,7 @@ public final class ServerPayloadHandler {
             if (!(ctx.player() instanceof ServerPlayer player)) return;
 
             if (player.containerMenu instanceof BackpackContainer backpack) {
+                backpack.setClientVisibleRows(data.visibleRows());
                 backpack.setScrollOffset(data.newOffset());
                 backpack.broadcastChanges();
             }
