@@ -146,9 +146,6 @@ public class BackpackContainer extends AbstractContainerMenu {
         this.storageContainer = new SimpleContainer(containerSize);
         this.scrollOffset = buf.readInt();
         this.lastOccupiedRow = buf.readInt();
-        for (int i = 0; i < containerSize; i++) {
-            this.storageContainer.setItem(i, buf.readItem());
-        }
         setupSlots(playerInventory);
     }
 
