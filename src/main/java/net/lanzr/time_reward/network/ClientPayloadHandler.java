@@ -4,6 +4,7 @@ import net.lanzr.time_reward.TimeReward;
 import net.lanzr.time_reward.client.gui.BackpackScreen;
 import net.lanzr.time_reward.inventory.BackpackContainer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.Container;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
