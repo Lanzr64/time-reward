@@ -115,8 +115,24 @@ public final class ServerPayloadHandler {
                 backpack.setClientVisibleRows(data.visibleRows());
                 backpack.setScrollOffset(data.newOffset());
                 backpack.broadcastChanges();
+                // Send custom slot sync - standard broadcastChanges() doesn't handle DynamicScrollSlot
+                sendBackpackSlotSync(player, backpack);
             }
         });
+    }
+
+    /**
+     * 滚动后将当前 scrollOffset 对应的 144 个显示槽位物品发给客户端。
+     * 绕过 broadcastChanges() 的增量同步（其对 DynamicScrollSlot 不生效）。
+     */
+    private static void sendBackpackSlotSync(ServerPlayer player, BackpackContainer backpack) {
+        int scrollOffset = backpack.getScrollOffset();
+        java.util.List<ItemStack> items = new java.util.ArrayList<>(BackpackContainer.TOTAL_DISPLAY_SLOTS);
+        for (int i = 0; i < BackpackContainer.TOTAL_DISPLAY_SLOTS; i++) {
+            items.add(backpack.getSlot(i).getItem());
+        }
+        PacketDistributor.sendToPlayer(player,
+                new BackpackSlotSyncPayload(backpack.containerId, scrollOffset, items));
     }
 
     /**

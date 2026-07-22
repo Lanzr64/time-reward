@@ -4,6 +4,7 @@ import net.lanzr.time_reward.TimeReward;
 import net.lanzr.time_reward.client.gui.BackpackScreen;
 import net.lanzr.time_reward.inventory.BackpackContainer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.Container;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
@@ -36,6 +37,32 @@ public final class ClientPayloadHandler {
                         oldRow, data.lastOccupiedRow(), data.containerId());
                 if (mc.screen instanceof BackpackScreen bs) {
                     bs.onLastOccupiedRowChanged();
+                }
+            }
+        });
+    }
+
+    /**
+     * 处理服务端发来的背包槽位同步包，直接将物品写入本地 storageContainer。
+     */
+    public static void handleBackpackSlotSync(BackpackSlotSyncPayload data, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player != null
+                    && mc.player.containerMenu instanceof BackpackContainer bc
+                    && bc.containerId == data.containerId()) {
+
+                Container storage = bc.getStorageContainer();
+                int offset = data.scrollOffset();
+                java.util.List<ItemStack> items = data.items();
+
+                for (int i = 0; i < items.size() && i < BackpackContainer.TOTAL_DISPLAY_SLOTS; i++) {
+                    int row = i / BackpackContainer.COLS;
+                    int col = i % BackpackContainer.COLS;
+                    int actualIndex = (row + offset) * BackpackContainer.COLS + col;
+                    if (actualIndex < storage.getContainerSize()) {
+                        storage.setItem(actualIndex, items.get(i));
+                    }
                 }
             }
         });

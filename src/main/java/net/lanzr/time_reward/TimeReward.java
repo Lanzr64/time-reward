@@ -2,6 +2,7 @@ package net.lanzr.time_reward;
 import net.lanzr.time_reward.api.PlayerCommentTools;
 import net.lanzr.time_reward.api.RewardTag;
 import net.lanzr.time_reward.init.ModMenuTypes;
+import net.lanzr.time_reward.network.BackpackSlotSyncPayload;
 import net.lanzr.time_reward.network.BackpackStatePayload;
 import net.lanzr.time_reward.network.ClientPayloadHandler;
 import net.lanzr.time_reward.network.OpenBackpackPayload;
@@ -71,6 +72,11 @@ public class TimeReward
                 BackpackStatePayload.TYPE,
                 BackpackStatePayload.STREAM_CODEC,
                 ClientPayloadHandler::handleBackpackState
+        );
+        registrar.playToClient(
+                BackpackSlotSyncPayload.TYPE,
+                BackpackSlotSyncPayload.STREAM_CODEC,
+                ClientPayloadHandler::handleBackpackSlotSync
         );
     }
 
