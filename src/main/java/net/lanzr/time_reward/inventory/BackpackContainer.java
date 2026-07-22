@@ -77,6 +77,12 @@ public class BackpackContainer extends AbstractContainerMenu {
     /** 当前滚动偏移量（行数）。在两侧分别管理。 */
     private int scrollOffset;
 
+    /** 
+     * 客户端的实际可见行数（由屏幕高度决定）。 
+     * 用于计算最大滚动偏移量，替代硬编码的 MAX_VISIBLE_ROWS。
+     */
+    private int clientVisibleRows = MAX_VISIBLE_ROWS;
+
     /** 包含物品的最后一行索引（从0开始），由服务端在打开时设置。 */
     private int lastOccupiedRow;
 
@@ -244,11 +250,22 @@ public class BackpackContainer extends AbstractContainerMenu {
     }
 
     /**
+     * 设置客户端的实际可见行数。
+     * 由 {@link net.lanzr.time_reward.client.gui.BackpackScreen} 在初始化或窗口resize时调用，
+     * 使最大滚动偏移量的计算与实际显示行数一致。
+     *
+     * @param rows 实际可见行数（至少为1，不超过 MAX_VISIBLE_ROWS）
+     */
+    public void setClientVisibleRows(int rows) {
+        this.clientVisibleRows = Math.max(1, Math.min(rows, MAX_VISIBLE_ROWS));
+    }
+
+    /**
      * 根据lastOccupiedRow（实际内容范围），而非容器容量，返回客户端允许的最大滚动偏移量。
      * 这与{@code BackpackScrollPanel.getContentHeight()}的语义一致。
      */
     private int getClientMaxScrollOffset() {
-        return Math.max(0, lastOccupiedRow + 1 - MAX_VISIBLE_ROWS);
+        return Math.max(0, lastOccupiedRow + 1 - clientVisibleRows);
     }
 
     /**
@@ -280,7 +297,7 @@ public class BackpackContainer extends AbstractContainerMenu {
      * 滚动上限不一致导致槽位物品写入错位。</p>
      */
     public int getMaxScrollOffset() {
-        return Math.max(0, lastOccupiedRow + 1 - MAX_VISIBLE_ROWS);
+        return Math.max(0, lastOccupiedRow + 1 - clientVisibleRows);
     }
 
     private int clampScrollOffset(int offset) {

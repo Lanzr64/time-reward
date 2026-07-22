@@ -116,6 +116,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
         initSearchBox();
         initSortButton();
         updateSlotsPosition();
+        menu.setClientVisibleRows(this.visibleRows);
     }
 
     private void initScrollPanel() {
@@ -382,6 +383,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
     public void resize(Minecraft minecraft, int width, int height) {
         int newVisibleRows = Math.max(4, Math.min(BackpackContainer.MAX_VISIBLE_ROWS, (height - HEIGHT_WITHOUT_STORAGE_SLOTS) / 18));
         this.visibleRows = newVisibleRows;
+        menu.setClientVisibleRows(this.visibleRows);
         this.imageHeight = HEIGHT_WITHOUT_STORAGE_SLOTS + visibleRows * SLOT_SIZE;
         this.inventoryLabelY = imageHeight - 94;
         super.resize(minecraft, width, height);
