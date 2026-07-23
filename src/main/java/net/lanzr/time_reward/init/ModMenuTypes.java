@@ -23,21 +23,7 @@ public final class ModMenuTypes {
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(Registries.MENU, TimeReward.MODID);
 
-    /**
-     * 背包容器菜单类型。
-     *
-     * <p>使用 {@code IMenuTypeExtension.create(BackpackContainer::new)} 构建，
-     * 工厂方法接收容器ID、玩家背包和网络数据包，返回对应的 {@link BackpackContainer} 实例。</p>
-     */
-    public static final Supplier<MenuType<BackpackContainer>> BACKPACK =
-            MENUS.register("backpack", () -> IMenuTypeExtension.create(BackpackContainer::new));
-
-    /**
-     * 获取已注册的 {@code MenuType<BackpackContainer>} 实例。
-     *
-     * @return 背包容器的 MenuType
-     */
-    public static MenuType<BackpackContainer> get() {
-        return BACKPACK.get();
-    }
+    // TODO: Future MenuType registrations go here.
+    // Previously registered "backpack" MenuType was removed from Registries.MENU
+    // to avoid sync issues on clients without the mod installed.
 }

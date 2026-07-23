@@ -1,7 +1,6 @@
 package net.lanzr.time_reward;
 import net.lanzr.time_reward.api.PlayerCommentTools;
 import net.lanzr.time_reward.api.RewardTag;
-import net.lanzr.time_reward.init.ModMenuTypes;
 import net.lanzr.time_reward.network.BackpackSlotSyncPayload;
 import net.lanzr.time_reward.network.BackpackStatePayload;
 import net.lanzr.time_reward.network.ClientPayloadHandler;
@@ -43,9 +42,6 @@ public class TimeReward
 
     public TimeReward(IEventBus modEventBus, ModContainer modContainer)    {
         NeoForge.EVENT_BUS.register(this);
-
-        // Register DeferredRegisters
-        ModMenuTypes.MENUS.register(modEventBus);
 
         // Register network payloads
         modEventBus.addListener(RegisterPayloadHandlersEvent.class, this::registerPayloads);
