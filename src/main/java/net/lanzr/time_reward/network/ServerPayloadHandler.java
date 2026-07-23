@@ -4,17 +4,17 @@ import net.lanzr.time_reward.TimeReward;
 import net.lanzr.time_reward.api.CommentInfo;
 import net.lanzr.time_reward.api.PlayerCommentTools;
 import net.lanzr.time_reward.inventory.BackpackContainer;
+import net.lanzr.time_reward.network.BackpackCarriedUpdatePayload;
+import net.lanzr.time_reward.network.BackpackClickPayload;
+import net.lanzr.time_reward.network.BackpackClosePayload;
 import net.lanzr.time_reward.save.LZSavedData;
 import net.lanzr.time_reward.save.PlayerRewardManager;
+import net.lanzr.time_reward.server.BackpackContainerManager;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -77,29 +77,15 @@ public final class ServerPayloadHandler {
 
             final int finalLastOccupiedRow = lastOccupiedRow;
 
-            player.openMenu(new MenuProvider() {
-                @Override
-                public Component getDisplayName() {
-                    return Component.literal("奖励背包");
+            BackpackContainerManager.getInstance().openContainer(
+                player, container, 0, finalLastOccupiedRow, () -> {
+                    try {
+                        PlayerRewardManager.save(playerUUID, container, lookup, saveLevel);
+                    } catch (Exception e) {
+                        TimeReward.LOGGER.error("Save callback error", e);
+                    }
                 }
-
-                @Override
-                public AbstractContainerMenu createMenu(int id, Inventory inv, Player p) {
-                    BackpackContainer bc = new BackpackContainer(id, inv, container, 0);
-                    bc.setSaveCallback(() -> {
-                        try {
-                            PlayerRewardManager.save(playerUUID, container, lookup, saveLevel);
-                        } catch (Exception e) {
-                            TimeReward.LOGGER.error("Save callback error", e);
-                        }
-                    });
-                    return bc;
-                }
-            }, buf -> {
-                buf.writeInt(container.getContainerSize());
-                buf.writeInt(0);
-                buf.writeInt(finalLastOccupiedRow);
-            });
+            );
         });
     }
 
@@ -151,6 +137,43 @@ public final class ServerPayloadHandler {
                 bc.sort(BackpackContainer.SortType.values()[data.sortOrdinal()]);
                 bc.broadcastChanges();
             }
+        });
+    }
+
+    /**
+     * 处理客户端对背包容器的点击操作。
+     *
+     * <p>验证玩家当前打开的容器匹配其容器ID，
+     * 然后将点击转发到{@link BackpackContainer#clicked(int, int, ClickType, Player)}。
+     * 点击处理后发送槽位同步和当前物品更新。</p>
+     */
+    public static void handleBackpackClick(BackpackClickPayload data, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (!(ctx.player() instanceof ServerPlayer player)) return;
+            BackpackContainer bc = BackpackContainerManager.getInstance().getContainer(player);
+            if (bc == null || bc.containerId != data.containerId()) return;
+
+            ClickType clickType = ClickType.values()[data.clickTypeOrdinal()];
+            bc.clicked(data.slotId(), data.button(), clickType, player);
+
+            // 点击处理后发送槽位同步
+            sendBackpackSlotSync(player, bc);
+            // 发送当前物品更新
+            PacketDistributor.sendToPlayer(player, new BackpackCarriedUpdatePayload(
+                data.containerId(), bc.getCarried()));
+        });
+    }
+
+    /**
+     * 处理客户端关闭背包容器的请求。
+     *
+     * <p>通过{@link BackpackContainerManager#closeContainer(java.util.UUID)}关闭容器，
+     * 该操作会触发保存回调并将条目从打开容器映射中移除。</p>
+     */
+    public static void handleBackpackClose(BackpackClosePayload data, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (!(ctx.player() instanceof ServerPlayer player)) return;
+            BackpackContainerManager.getInstance().closeContainer(player.getUUID());
         });
     }
 }

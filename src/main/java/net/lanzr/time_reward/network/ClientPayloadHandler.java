@@ -1,9 +1,13 @@
 package net.lanzr.time_reward.network;
 
 import net.lanzr.time_reward.TimeReward;
+import net.lanzr.time_reward.client.ContainerStateManager;
 import net.lanzr.time_reward.client.gui.BackpackScreen;
 import net.lanzr.time_reward.inventory.BackpackContainer;
+import net.lanzr.time_reward.network.BackpackCarriedUpdatePayload;
+import net.lanzr.time_reward.network.OpenBackpackScreenPayload;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.Container;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -16,6 +20,29 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  */
 public final class ClientPayloadHandler {
     private ClientPayloadHandler() {}
+
+    /**
+     * 处理服务端发来的打开背包屏幕包，在客户端创建BackpackContainer和BackpackScreen。
+     */
+    public static void handleOpenBackpackScreen(OpenBackpackScreenPayload data, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player == null) return;
+
+            // 从负载数据创建存储容器
+            SimpleContainer storage = new SimpleContainer(data.containerSize());
+            ContainerStateManager.getInstance().registerBackpack(data.containerId(), storage);
+
+            // 使用服务端构造器在客户端创建BackpackContainer，
+            // 然后覆写服务端recomputeLastOccupiedRow()的结果
+            BackpackContainer bc = new BackpackContainer(
+                    data.containerId(), mc.player.getInventory(), storage, data.scrollOffset());
+            bc.setLastOccupiedRow(data.lastOccupiedRow());
+
+            // 打开背包屏幕
+            mc.setScreen(new BackpackScreen(bc, mc.player.getInventory(), data.title()));
+        });
+    }
 
     /**
      * 处理来自服务端的权威{@link BackpackStatePayload}。
@@ -65,6 +92,19 @@ public final class ClientPayloadHandler {
                         storage.setItem(actualIndex, items.get(i));
                     }
                 }
+            }
+        });
+    }
+
+    /**
+     * 处理服务端发来的背包光标物品更新包，直接设置客户端BackpackContainer的carried物品。
+     */
+    public static void handleCarriedUpdate(BackpackCarriedUpdatePayload data, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player != null && mc.player.containerMenu instanceof BackpackContainer bc
+                    && bc.containerId == data.containerId()) {
+                bc.setCarried(data.carried());
             }
         });
     }

@@ -3,6 +3,8 @@ package net.lanzr.time_reward.client.gui;
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.lanzr.time_reward.TimeReward;
 import net.lanzr.time_reward.inventory.BackpackContainer;
+import net.lanzr.time_reward.network.BackpackClickPayload;
+import net.lanzr.time_reward.network.BackpackClosePayload;
 import net.lanzr.time_reward.network.ScrollChangePayload;
 import net.lanzr.time_reward.network.SortPayload;
 import net.minecraft.client.Minecraft;
@@ -444,6 +446,24 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
             return true;
         }
 
+        // Q key = drop item from hovered slot
+        if (keyCode == 81 && hoveredSlot != null) {
+            boolean dropAll = hasControlDown();
+            PacketDistributor.sendToServer(new BackpackClickPayload(
+                    menu.containerId, hoveredSlot.index, dropAll ? 1 : 0,
+                    net.minecraft.world.inventory.ClickType.THROW.ordinal(), false));
+            return true;
+        }
+
+        // Number keys 1-9 = hotbar swap from hovered slot
+        if (keyCode >= 49 && keyCode <= 57 && hoveredSlot != null) {
+            int hotbarSlot = keyCode - 49;
+            PacketDistributor.sendToServer(new BackpackClickPayload(
+                    menu.containerId, hoveredSlot.index, hotbarSlot,
+                    net.minecraft.world.inventory.ClickType.SWAP.ordinal(), false));
+            return true;
+        }
+
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -460,6 +480,23 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
         if (searchBox != null) {
             searchBox.mouseClicked(mouseX, mouseY, button);
         }
+
+        // Handle container slot clicks via custom payload
+        // findSlot is private in AbstractContainerScreen, so iterate manually via isHovering
+        for (Slot slot : menu.slots) {
+            if (isHovering(slot.x, slot.y, 16, 16, mouseX, mouseY) && slot.isActive()) {
+                int clickTypeOrdinal;
+                if (hasShiftDown()) {
+                    clickTypeOrdinal = net.minecraft.world.inventory.ClickType.QUICK_MOVE.ordinal();
+                } else {
+                    clickTypeOrdinal = net.minecraft.world.inventory.ClickType.PICKUP.ordinal();
+                }
+                PacketDistributor.sendToServer(new BackpackClickPayload(
+                        menu.containerId, slot.index, button, clickTypeOrdinal, !menu.getCarried().isEmpty()));
+                return true;
+            }
+        }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -492,6 +529,12 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public void onClose() {
+        PacketDistributor.sendToServer(new BackpackClosePayload(menu.containerId));
+        super.onClose();
     }
 
     // ======================== Inner Class: BackpackScrollPanel ========================
