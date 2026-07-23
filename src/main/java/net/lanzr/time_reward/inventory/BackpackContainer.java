@@ -1,7 +1,6 @@
 package net.lanzr.time_reward.inventory;
 
 import net.lanzr.time_reward.TimeReward;
-import net.lanzr.time_reward.init.ModMenuTypes;
 import net.lanzr.time_reward.network.BackpackStatePayload;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
@@ -11,6 +10,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -119,7 +119,7 @@ public class BackpackContainer extends AbstractContainerMenu {
      * @param scrollOffset   初始滚动偏移量（行数）
      */
     public BackpackContainer(int id, Inventory playerInventory, Container container, int scrollOffset) {
-        super(ModMenuTypes.get(), id);
+        super(MenuType.GENERIC_9x6, id);
         this.player = playerInventory.player;
         this.storageContainer = container;
         this.scrollOffset = scrollOffset;
@@ -140,7 +140,7 @@ public class BackpackContainer extends AbstractContainerMenu {
      * @param buf            包含{@code containerSize}和{@code scrollOffset}的网络缓冲区
      */
     public BackpackContainer(int id, Inventory playerInventory, FriendlyByteBuf buf) {
-        super(ModMenuTypes.get(), id);
+        super(MenuType.GENERIC_9x6, id);
         this.player = playerInventory.player;
         int containerSize = buf.readInt();
         this.storageContainer = new SimpleContainer(containerSize);
@@ -445,7 +445,8 @@ public class BackpackContainer extends AbstractContainerMenu {
      */
     @Override
     public void broadcastChanges() {
-        super.broadcastChanges();
+        // Don't call super — vanilla broadcast would send 180-slot updates
+        // to a client that only has 90 slots (ChestMenu), causing crashes.
         if (this.lastOccupiedDirty) {
             int row = recomputeLastOccupiedRow();
             recomputeCallCount++;
