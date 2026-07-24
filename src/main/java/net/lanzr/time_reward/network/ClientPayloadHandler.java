@@ -39,6 +39,9 @@ public final class ClientPayloadHandler {
                     data.containerId(), mc.player.getInventory(), storage, data.scrollOffset());
             bc.setLastOccupiedRow(data.lastOccupiedRow());
 
+            // 设置客户端容器菜单，使 S2C payload 处理函数能匹配到 BackpackContainer
+            mc.player.containerMenu = bc;
+
             // 打开背包屏幕
             mc.setScreen(new BackpackScreen(bc, mc.player.getInventory(), data.title()));
         });
