@@ -150,6 +150,19 @@ public final class BackpackContainerManager {
                 Component.literal("奖励背包")
         ));
 
+        // 发送初始槽位同步，填充客户端的空存储容器
+        java.util.List<net.minecraft.world.item.ItemStack> initialItems = new java.util.ArrayList<>(BackpackContainer.TOTAL_DISPLAY_SLOTS);
+        int sendCount = Math.min(BackpackContainer.TOTAL_DISPLAY_SLOTS, storageContainer.getContainerSize());
+        for (int i = 0; i < sendCount; i++) {
+            initialItems.add(storageContainer.getItem(i));
+        }
+        // 如果容器尺寸小于显示槽位数，补充空物品
+        for (int i = sendCount; i < BackpackContainer.TOTAL_DISPLAY_SLOTS; i++) {
+            initialItems.add(net.minecraft.world.item.ItemStack.EMPTY);
+        }
+        PacketDistributor.sendToPlayer(player, new net.lanzr.time_reward.network.BackpackSlotSyncPayload(
+                containerId, scrollOffset, initialItems));
+
         return container;
     }
 

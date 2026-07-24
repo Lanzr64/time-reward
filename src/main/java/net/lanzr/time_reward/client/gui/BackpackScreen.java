@@ -3,6 +3,7 @@ package net.lanzr.time_reward.client.gui;
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.lanzr.time_reward.TimeReward;
 import net.lanzr.time_reward.inventory.BackpackContainer;
+import net.lanzr.time_reward.inventory.DynamicScrollSlot;
 import net.lanzr.time_reward.network.BackpackClickPayload;
 import net.lanzr.time_reward.network.BackpackClosePayload;
 import net.lanzr.time_reward.network.ScrollChangePayload;
@@ -477,24 +478,54 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Let search box handle clicks first
         if (searchBox != null) {
             searchBox.mouseClicked(mouseX, mouseY, button);
         }
 
         // Handle container slot clicks via custom payload
-        // findSlot is private in AbstractContainerScreen, so iterate manually via isHovering
-        for (Slot slot : menu.slots) {
-            if (isHovering(slot.x, slot.y, 16, 16, mouseX, mouseY) && slot.isActive()) {
-                int clickTypeOrdinal;
-                if (hasShiftDown()) {
-                    clickTypeOrdinal = net.minecraft.world.inventory.ClickType.QUICK_MOVE.ordinal();
-                } else {
-                    clickTypeOrdinal = net.minecraft.world.inventory.ClickType.PICKUP.ordinal();
-                }
-                PacketDistributor.sendToServer(new BackpackClickPayload(
-                        menu.containerId, slot.index, button, clickTypeOrdinal, !menu.getCarried().isEmpty()));
-                return true;
+        Slot slot = null;
+        for (int i = 0; i < this.menu.slots.size(); i++) {
+            Slot s = this.menu.slots.get(i);
+            if (this.isHovering(s.x, s.y, 16, 16, mouseX, mouseY) && s.isActive()) {
+                slot = s;
+                break;
             }
+        }
+
+        if (slot != null) {
+            int slotId = slot.index;
+            boolean hasCarried = !menu.getCarried().isEmpty();
+            int clickTypeOrdinal;
+            if (hasShiftDown()) {
+                clickTypeOrdinal = net.minecraft.world.inventory.ClickType.QUICK_MOVE.ordinal();
+            } else {
+                clickTypeOrdinal = net.minecraft.world.inventory.ClickType.PICKUP.ordinal();
+            }
+
+            // Optimistic client-side update: immediately reflect the click result
+            // This prevents the 1-frame flicker while waiting for the server response
+            if (!hasShiftDown()) {
+                ItemStack cursorItem = menu.getCarried().copy();
+                ItemStack slotItem = slot.getItem().copy();
+
+                if (!cursorItem.isEmpty() && slotItem.isEmpty()) {
+                    // Placing item into empty slot - clear cursor
+                    menu.setCarried(ItemStack.EMPTY);
+                } else if (cursorItem.isEmpty() && !slotItem.isEmpty()) {
+                    // Picking up item from slot - set cursor, clear slot
+                    menu.setCarried(slotItem);
+                    // Only clear the slot if it's a DynamicScrollSlot (storage slot)
+                    if (slot instanceof DynamicScrollSlot) {
+                        slot.set(ItemStack.EMPTY);
+                    }
+                }
+                // If both non-empty: swap - don't optimistically update (too complex)
+            }
+
+            PacketDistributor.sendToServer(new BackpackClickPayload(
+                    menu.containerId, slotId, button, clickTypeOrdinal, !menu.getCarried().isEmpty()));
+            return true;
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
