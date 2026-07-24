@@ -1,17 +1,12 @@
 package net.lanzr.time_reward;
 import net.lanzr.time_reward.api.PlayerCommentTools;
 import net.lanzr.time_reward.api.RewardTag;
-import net.lanzr.time_reward.network.BackpackSlotSyncPayload;
-import net.lanzr.time_reward.network.BackpackStatePayload;
-import net.lanzr.time_reward.network.ClientPayloadHandler;
+import net.lanzr.time_reward.network.BackpackClickPayload;
+import net.lanzr.time_reward.network.BackpackClosePayload;
 import net.lanzr.time_reward.network.OpenBackpackPayload;
 import net.lanzr.time_reward.network.ScrollChangePayload;
 import net.lanzr.time_reward.network.ServerPayloadHandler;
 import net.lanzr.time_reward.network.SortPayload;
-import net.lanzr.time_reward.network.OpenBackpackScreenPayload;
-import net.lanzr.time_reward.network.BackpackClickPayload;
-import net.lanzr.time_reward.network.BackpackClosePayload;
-import net.lanzr.time_reward.network.BackpackCarriedUpdatePayload;
 import net.lanzr.time_reward.save.LZSavedData;
 
 import net.minecraft.ChatFormatting;
@@ -68,22 +63,6 @@ public class TimeReward
                 SortPayload.STREAM_CODEC,
                 ServerPayloadHandler::handleSort
         );
-        registrar.playToClient(
-                BackpackStatePayload.TYPE,
-                BackpackStatePayload.STREAM_CODEC,
-                ClientPayloadHandler::handleBackpackState
-        );
-        registrar.playToClient(
-                BackpackSlotSyncPayload.TYPE,
-                BackpackSlotSyncPayload.STREAM_CODEC,
-                ClientPayloadHandler::handleBackpackSlotSync
-        );
-        // New Payloads for custom backpack flow (client-server compatibility)
-        registrar.playToClient(
-                OpenBackpackScreenPayload.TYPE,
-                OpenBackpackScreenPayload.STREAM_CODEC,
-                ClientPayloadHandler::handleOpenBackpackScreen
-        );
         registrar.playToServer(
                 BackpackClickPayload.TYPE,
                 BackpackClickPayload.STREAM_CODEC,
@@ -93,11 +72,6 @@ public class TimeReward
                 BackpackClosePayload.TYPE,
                 BackpackClosePayload.STREAM_CODEC,
                 ServerPayloadHandler::handleBackpackClose
-        );
-        registrar.playToClient(
-                BackpackCarriedUpdatePayload.TYPE,
-                BackpackCarriedUpdatePayload.STREAM_CODEC,
-                ClientPayloadHandler::handleCarriedUpdate
         );
     }
 
