@@ -445,8 +445,10 @@ public class BackpackContainer extends AbstractContainerMenu {
      */
     @Override
     public void broadcastChanges() {
-        // Don't call super — vanilla broadcast would send 180-slot updates
-        // to a client that only has 90 slots (ChestMenu), causing crashes.
+        // Call super to send slot updates through the ContainerSynchronizer.
+        // The client's containerMenu is BackpackContainer (180 slots), not ChestMenu (90 slots),
+        // so 180-slot updates are handled correctly by the client.
+        super.broadcastChanges();
         if (this.lastOccupiedDirty) {
             int row = recomputeLastOccupiedRow();
             recomputeCallCount++;

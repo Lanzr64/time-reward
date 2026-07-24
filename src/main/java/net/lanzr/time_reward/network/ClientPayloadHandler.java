@@ -96,9 +96,12 @@ public final class ClientPayloadHandler {
                         storage.setItem(actualIndex, items.get(i));
                     }
                 }
-                // 强制屏幕重新渲染
-                if (mc.screen instanceof net.lanzr.time_reward.client.gui.BackpackScreen) {
-                    mc.screen.resize(mc, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight());
+                // Debug: 验证 storage[0] 和 storage[143]（显示槽位范围）
+                ItemStack first = storage.getItem(0);
+                ItemStack last = storage.getItem(BackpackContainer.COLS - 1);
+                if (!first.isEmpty()) {
+                    TimeReward.LOGGER.info("[SlotSync] VERIFY: storage[0] = {} (first={} items={})",
+                            first.getDisplayName().getString(), items.size(), items.isEmpty() ? "empty" : items.get(0).toString());
                 }
             }
         });
