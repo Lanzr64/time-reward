@@ -63,6 +63,7 @@ public class TimeReward
             IPayloadHandler<OpenBackpackScreenPayload> openBackpackScreen,
             IPayloadHandler<BackpackCarriedUpdatePayload> carriedUpdate
     ) {
+        LOGGER.info("[TimeReward] initClientHandlers called - replacing S2C delegate handlers with real client handlers");
         $backpackStateHandler = backpackState;
         $backpackSlotSyncHandler = backpackSlotSync;
         $openBackpackScreenHandler = openBackpackScreen;
