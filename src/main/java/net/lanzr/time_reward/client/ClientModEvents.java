@@ -13,24 +13,23 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+
 
 @EventBusSubscriber(modid = TimeReward.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientModEvents {
     @SubscribeEvent
     public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(KeybindHandler.getOpenBackpackKey());
-    }
-
-    @SubscribeEvent
-    public static void registerClientPayloads(RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1").optional();
-        // S2C - handlers run on CLIENT only
-        registrar.playToClient(BackpackStatePayload.TYPE, BackpackStatePayload.STREAM_CODEC, ClientPayloadHandler::handleBackpackState);
-        registrar.playToClient(BackpackSlotSyncPayload.TYPE, BackpackSlotSyncPayload.STREAM_CODEC, ClientPayloadHandler::handleBackpackSlotSync);
-        registrar.playToClient(OpenBackpackScreenPayload.TYPE, OpenBackpackScreenPayload.STREAM_CODEC, ClientPayloadHandler::handleOpenBackpackScreen);
-        registrar.playToClient(BackpackCarriedUpdatePayload.TYPE, BackpackCarriedUpdatePayload.STREAM_CODEC, ClientPayloadHandler::handleCarriedUpdate);
+        // Set up S2C payload handlers on the client side.
+        // Type registrations happen in TimeReward.registerPayloads() via playBidirectional
+        // with delegate lambdas. Those lambdas read the handler fields at invocation time,
+        // so we replace the no-op defaults here (before any gameplay packets are exchanged).
+        TimeReward.initClientHandlers(
+                ClientPayloadHandler::handleBackpackState,
+                ClientPayloadHandler::handleBackpackSlotSync,
+                ClientPayloadHandler::handleOpenBackpackScreen,
+                ClientPayloadHandler::handleCarriedUpdate
+        );
     }
 }
 
