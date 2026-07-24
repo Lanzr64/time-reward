@@ -47,7 +47,7 @@ public class TimeReward
     }
 
     private void registerPayloads(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1");
+        final PayloadRegistrar registrar = event.registrar("1").optional();
         registrar.playToServer(
                 OpenBackpackPayload.TYPE,
                 OpenBackpackPayload.STREAM_CODEC,

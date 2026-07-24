@@ -25,7 +25,7 @@ public class ClientModEvents {
 
     @SubscribeEvent
     public static void registerClientPayloads(RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1");
+        final PayloadRegistrar registrar = event.registrar("1").optional();
         // S2C - handlers run on CLIENT only
         registrar.playToClient(BackpackStatePayload.TYPE, BackpackStatePayload.STREAM_CODEC, ClientPayloadHandler::handleBackpackState);
         registrar.playToClient(BackpackSlotSyncPayload.TYPE, BackpackSlotSyncPayload.STREAM_CODEC, ClientPayloadHandler::handleBackpackSlotSync);
