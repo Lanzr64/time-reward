@@ -85,17 +85,21 @@ public final class ClientPayloadHandler {
 
                 java.util.List<ItemStack> items = data.items();
 
-                // 直接用 BackpackContainer 的槽位设置方法，它内部通过 DynamicScrollSlot
-                // 使用客户端的 scrollOffset 计算 actualIndex，与服务端发给我们的 offset 一致
+                // 按偏移量将物品写入 storageContainer
+                Container storage = bc.getStorageContainer();
+                int offset = data.scrollOffset();
                 for (int i = 0; i < items.size() && i < BackpackContainer.TOTAL_DISPLAY_SLOTS; i++) {
-                    bc.getSlot(i).set(items.get(i));
+                    int row = i / BackpackContainer.COLS;
+                    int col = i % BackpackContainer.COLS;
+                    int actualIndex = (row + offset) * BackpackContainer.COLS + col;
+                    if (actualIndex < storage.getContainerSize()) {
+                        storage.setItem(actualIndex, items.get(i));
+                    }
                 }
-                // 刷新槽位渲染
-                if (mc.screen instanceof net.lanzr.time_reward.client.gui.BackpackScreen bs) {
-                    bs.updateSlotsPosition();
+                // 强制屏幕重新渲染
+                if (mc.screen instanceof net.lanzr.time_reward.client.gui.BackpackScreen) {
+                    mc.screen.resize(mc, mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight());
                 }
-                TimeReward.LOGGER.info("[SlotSync] wrote {} items via slots, containerId={}",
-                        items.size(), data.containerId());
             }
         });
     }
