@@ -1,143 +1,97 @@
 {
-  "active_plan": "D:\\lz_workplace\\java\\lzProject\\time-reward\\1.21\\.omo\\plans\\backpack-scroll-and-mask-fix.md",
-  "started_at": "2026-07-21T05:31:47Z",
+  "active_plan": "D:\\lz_workplace\\java\\lzProject\\time-reward\\1.21\\.omo\\plans\\client-server-compatibility.md",
+  "started_at": "2026-07-23T07:20:28Z",
   "session_ids": [
-    "opencode:ses_07d555d2affeIf30LYwsp3mWuk"
+    "opencode:ses_07266a2dffferxaYCF6EbCqBnA",
+    "opencode:ses_072025f53ffeRv6hJA0AMaxvpK",
+    "opencode:ses_072022ba5ffe8bbp4R66a0q71T",
+    "opencode:ses_07201faafffehIeophhM5DFCRO"
   ],
-  "plan_name": "backpack-scroll-and-mask-fix",
+  "plan_name": "client-server-compatibility",
   "status": "completed",
   "agent": "atlas",
-  "session_origins": {
-    "opencode:ses_07d555d2affeIf30LYwsp3mWuk": "direct"
-  },
-  "task_sessions": {
-    "todo:1": {
-      "task_key": "todo:1",
-      "task_label": "1",
-      "task_title": "加日志探针确认 Bug 1 实际触发根因",
-      "session_id": "opencode:ses_07cd6644cffei94w2gS8iv07M1",
-      "agent": "Sisyphus-Junior",
-      "category": "deep",
-      "updated_at": "2026-07-21T05:54:01.307Z",
-      "started_at": "2026-07-21T05:50:11.145Z",
-      "status": "completed",
-      "ended_at": "2026-07-21T05:54:01.307Z",
-      "elapsed_ms": 230162
-    },
-    "todo:4": {
-      "task_key": "todo:4",
-      "task_label": "4",
-      "task_title": "服务端 sort / item mutation 后重算 `lastOccupiedRow` 并通过 `BackpackStatePayload` 下发客户端",
-      "session_id": "opencode:ses_07cc13163ffecm7MQ9drPXbzS0",
-      "agent": "Sisyphus-Junior",
-      "category": "deep",
-      "updated_at": "2026-07-21T06:08:27.593Z",
-      "started_at": "2026-07-21T06:05:48.811Z",
-      "status": "completed",
-      "ended_at": "2026-07-21T06:08:27.593Z",
-      "elapsed_ms": 158782
-    },
-    "todo:7": {
-      "task_key": "todo:7",
-      "task_label": "7",
-      "task_title": "`resize()` 新增 re-clamp 调用 + 执行 7-场景复现矩阵收集证据",
-      "session_id": "opencode:ses_07cb43b15ffeh0a2Ar5EaL7gSi",
-      "agent": "Sisyphus-Junior",
-      "category": "deep",
-      "updated_at": "2026-07-21T06:23:58.154Z",
-      "started_at": "2026-07-21T06:17:15.150Z",
-      "status": "completed",
-      "ended_at": "2026-07-21T06:23:58.154Z",
-      "elapsed_ms": 403004
-    },
-    "final-wave:f2": {
-      "task_key": "final-wave:f2",
-      "task_label": "F2",
-      "task_title": "**代码质量审阅** — `unspecified-high`",
-      "session_id": "opencode:ses_07ca6054affeDKfVRjJpiePg9E",
-      "agent": "oracle",
-      "updated_at": "2026-07-21T06:50:26.590Z",
-      "started_at": "2026-07-21T06:45:03.723Z",
-      "status": "completed",
-      "ended_at": "2026-07-21T06:50:26.590Z",
-      "elapsed_ms": 322867
-    }
-  },
   "schema_version": 2,
   "works": {
-    "backpack-scroll-and-mask-fix-legacy": {
-      "work_id": "backpack-scroll-and-mask-fix-legacy",
-      "active_plan": "D:\\lz_workplace\\java\\lzProject\\time-reward\\1.21\\.omo\\plans\\backpack-scroll-and-mask-fix.md",
-      "plan_name": "backpack-scroll-and-mask-fix",
+    "client-server-compatibility": {
+      "work_id": "client-server-compatibility",
+      "active_plan": "D:\\lz_workplace\\java\\lzProject\\time-reward\\1.21\\.omo\\plans\\client-server-compatibility.md",
+      "plan_name": "client-server-compatibility",
       "status": "completed",
-      "started_at": "2026-07-21T05:31:47Z",
-      "updated_at": "2026-07-21T06:50:26.590Z",
+      "started_at": "2026-07-23T07:20:28Z",
+      "updated_at": "2026-07-23T09:03:32.066Z",
       "session_ids": [
-        "opencode:ses_07d555d2affeIf30LYwsp3mWuk"
+        "opencode:ses_07266a2dffferxaYCF6EbCqBnA",
+        "opencode:ses_072025f53ffeRv6hJA0AMaxvpK",
+        "opencode:ses_072022ba5ffe8bbp4R66a0q71T",
+        "opencode:ses_07201faafffehIeophhM5DFCRO"
       ],
       "session_origins": {
-        "opencode:ses_07d555d2affeIf30LYwsp3mWuk": "direct"
+        "opencode:ses_07266a2dffferxaYCF6EbCqBnA": "direct",
+        "opencode:ses_072025f53ffeRv6hJA0AMaxvpK": "appended",
+        "opencode:ses_072022ba5ffe8bbp4R66a0q71T": "appended",
+        "opencode:ses_07201faafffehIeophhM5DFCRO": "appended"
       },
       "agent": "atlas",
       "task_sessions": {
         "todo:1": {
           "task_key": "todo:1",
           "task_label": "1",
-          "task_title": "加日志探针确认 Bug 1 实际触发根因",
-          "session_id": "opencode:ses_07cd6644cffei94w2gS8iv07M1",
+          "task_title": "Accept configurable MenuType (use MenuType.GENERIC_9x6 instead of the now-removed ModMenuTypes.get())",
+          "session_id": "opencode:ses_07204c851ffepapx7zC8NgwGb7",
           "agent": "Sisyphus-Junior",
           "category": "deep",
-          "updated_at": "2026-07-21T05:54:01.307Z",
-          "started_at": "2026-07-21T05:50:11.145Z",
+          "started_at": "2026-07-23T07:54:35.404Z",
+          "ended_at": "2026-07-23T07:59:43.503Z",
+          "elapsed_ms": 308099,
           "status": "completed",
-          "ended_at": "2026-07-21T05:54:01.307Z",
-          "elapsed_ms": 230162
+          "updated_at": "2026-07-23T07:59:43.503Z"
         },
-        "todo:4": {
-          "task_key": "todo:4",
-          "task_label": "4",
-          "task_title": "服务端 sort / item mutation 后重算 `lastOccupiedRow` 并通过 `BackpackStatePayload` 下发客户端",
-          "session_id": "opencode:ses_07cc13163ffecm7MQ9drPXbzS0",
+        "todo:8": {
+          "task_key": "todo:8",
+          "task_label": "8",
+          "task_title": "修改 ServerPayloadHandler（B 键流程不走 openMenu）",
+          "session_id": "opencode:ses_07201faafffehIeophhM5DFCRO",
           "agent": "Sisyphus-Junior",
           "category": "deep",
-          "updated_at": "2026-07-21T06:08:27.593Z",
-          "started_at": "2026-07-21T06:05:48.811Z",
-          "status": "completed",
-          "ended_at": "2026-07-21T06:08:27.593Z",
-          "elapsed_ms": 158782
-        },
-        "todo:7": {
-          "task_key": "todo:7",
-          "task_label": "7",
-          "task_title": "`resize()` 新增 re-clamp 调用 + 执行 7-场景复现矩阵收集证据",
-          "session_id": "opencode:ses_07cb43b15ffeh0a2Ar5EaL7gSi",
-          "agent": "Sisyphus-Junior",
-          "category": "deep",
-          "updated_at": "2026-07-21T06:23:58.154Z",
-          "started_at": "2026-07-21T06:17:15.150Z",
-          "status": "completed",
-          "ended_at": "2026-07-21T06:23:58.154Z",
-          "elapsed_ms": 403004
-        },
-        "final-wave:f2": {
-          "task_key": "final-wave:f2",
-          "task_label": "F2",
-          "task_title": "**代码质量审阅** — `unspecified-high`",
-          "session_id": "opencode:ses_07ca6054affeDKfVRjJpiePg9E",
-          "agent": "oracle",
-          "updated_at": "2026-07-21T06:50:26.590Z",
-          "started_at": "2026-07-21T06:45:03.723Z",
-          "status": "completed",
-          "ended_at": "2026-07-21T06:50:26.590Z",
-          "elapsed_ms": 322867
+          "updated_at": "2026-07-23T08:01:03.023Z"
         }
       },
-      "ended_at": "2026-07-21T06:49:50.875Z",
-      "elapsed_ms": 4683875
+      "ended_at": "2026-07-23T09:03:32.066Z",
+      "elapsed_ms": 6184066
     }
   },
-  "active_work_id": "backpack-scroll-and-mask-fix-legacy",
-  "updated_at": "2026-07-21T06:50:26.590Z",
-  "ended_at": "2026-07-21T06:49:50.875Z",
-  "elapsed_ms": 4683875
+  "active_work_id": "client-server-compatibility",
+  "session_origins": {
+    "opencode:ses_07266a2dffferxaYCF6EbCqBnA": "direct",
+    "opencode:ses_072025f53ffeRv6hJA0AMaxvpK": "appended",
+    "opencode:ses_072022ba5ffe8bbp4R66a0q71T": "appended",
+    "opencode:ses_07201faafffehIeophhM5DFCRO": "appended"
+  },
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Accept configurable MenuType (use MenuType.GENERIC_9x6 instead of the now-removed ModMenuTypes.get())",
+      "session_id": "opencode:ses_07204c851ffepapx7zC8NgwGb7",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "started_at": "2026-07-23T07:54:35.404Z",
+      "ended_at": "2026-07-23T07:59:43.503Z",
+      "elapsed_ms": 308099,
+      "status": "completed",
+      "updated_at": "2026-07-23T07:59:43.503Z"
+    },
+    "todo:8": {
+      "task_key": "todo:8",
+      "task_label": "8",
+      "task_title": "修改 ServerPayloadHandler（B 键流程不走 openMenu）",
+      "session_id": "opencode:ses_07201faafffehIeophhM5DFCRO",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-07-23T08:01:03.023Z"
+    }
+  },
+  "updated_at": "2026-07-23T09:03:32.066Z",
+  "ended_at": "2026-07-23T09:03:32.066Z",
+  "elapsed_ms": 6184066
 }

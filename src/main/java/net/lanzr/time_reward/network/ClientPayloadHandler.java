@@ -83,18 +83,19 @@ public final class ClientPayloadHandler {
                     && mc.player.containerMenu instanceof BackpackContainer bc
                     && bc.containerId == data.containerId()) {
 
-                Container storage = bc.getStorageContainer();
-                int offset = data.scrollOffset();
                 java.util.List<ItemStack> items = data.items();
 
+                // 直接用 BackpackContainer 的槽位设置方法，它内部通过 DynamicScrollSlot
+                // 使用客户端的 scrollOffset 计算 actualIndex，与服务端发给我们的 offset 一致
                 for (int i = 0; i < items.size() && i < BackpackContainer.TOTAL_DISPLAY_SLOTS; i++) {
-                    int row = i / BackpackContainer.COLS;
-                    int col = i % BackpackContainer.COLS;
-                    int actualIndex = (row + offset) * BackpackContainer.COLS + col;
-                    if (actualIndex < storage.getContainerSize()) {
-                        storage.setItem(actualIndex, items.get(i));
-                    }
+                    bc.getSlot(i).set(items.get(i));
                 }
+                // 刷新槽位渲染
+                if (mc.screen instanceof net.lanzr.time_reward.client.gui.BackpackScreen bs) {
+                    bs.updateSlotsPosition();
+                }
+                TimeReward.LOGGER.info("[SlotSync] wrote {} items via slots, containerId={}",
+                        items.size(), data.containerId());
             }
         });
     }
