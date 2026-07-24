@@ -150,8 +150,8 @@ public final class ServerPayloadHandler {
     public static void handleBackpackClick(BackpackClickPayload data, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
             if (!(ctx.player() instanceof ServerPlayer player)) return;
-            BackpackContainer bc = BackpackContainerManager.getInstance().getContainer(player);
-            if (bc == null || bc.containerId != data.containerId()) return;
+            if (!(player.containerMenu instanceof BackpackContainer bc)
+                    || bc.containerId != data.containerId()) return;
 
             ClickType clickType = ClickType.values()[data.clickTypeOrdinal()];
             bc.clicked(data.slotId(), data.button(), clickType, player);
@@ -164,12 +164,6 @@ public final class ServerPayloadHandler {
         });
     }
 
-    /**
-     * 处理客户端关闭背包容器的请求。
-     *
-     * <p>通过{@link BackpackContainerManager#closeContainer(java.util.UUID)}关闭容器，
-     * 该操作会触发保存回调并将条目从打开容器映射中移除。</p>
-     */
     public static void handleBackpackClose(BackpackClosePayload data, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
             if (!(ctx.player() instanceof ServerPlayer player)) return;

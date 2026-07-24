@@ -4,10 +4,10 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import net.lanzr.time_reward.TimeReward;
 import net.lanzr.time_reward.inventory.BackpackContainer;
 import net.lanzr.time_reward.inventory.DynamicScrollSlot;
-import net.lanzr.time_reward.network.BackpackClickPayload;
-import net.lanzr.time_reward.network.BackpackClosePayload;
 import net.lanzr.time_reward.network.ScrollChangePayload;
 import net.lanzr.time_reward.network.SortPayload;
+import net.lanzr.time_reward.network.BackpackClickPayload;
+import net.lanzr.time_reward.network.BackpackClosePayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -506,21 +506,16 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
             // Optimistic client-side update: immediately reflect the click result
             // This prevents the 1-frame flicker while waiting for the server response
             if (!hasShiftDown()) {
-                ItemStack cursorItem = menu.getCarried().copy();
-                ItemStack slotItem = slot.getItem().copy();
-
+                ItemStack cursorItem = menu.getCarried();
+                ItemStack slotItem = slot.getItem();
                 if (!cursorItem.isEmpty() && slotItem.isEmpty()) {
-                    // Placing item into empty slot - clear cursor
+                    // Placing item into empty slot - clear cursor optimistically
                     menu.setCarried(ItemStack.EMPTY);
                 } else if (cursorItem.isEmpty() && !slotItem.isEmpty()) {
-                    // Picking up item from slot - set cursor, clear slot
-                    menu.setCarried(slotItem);
-                    // Only clear the slot if it's a DynamicScrollSlot (storage slot)
-                    if (slot instanceof DynamicScrollSlot) {
-                        slot.set(ItemStack.EMPTY);
-                    }
+                    // Picking up item from slot - set cursor optimistically
+                    menu.setCarried(slotItem.copy());
                 }
-                // If both non-empty: swap - don't optimistically update (too complex)
+                // If both non-empty: swap - don't optimistically update
             }
 
             PacketDistributor.sendToServer(new BackpackClickPayload(
