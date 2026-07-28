@@ -32,6 +32,7 @@ public class RewardBoxTools {
     public static int presetReward(ServerLevel level) {
         RegistryAccess registryAccess = level.registryAccess();
         int offset = 0;
+        
         // 1
         offset += fillItems(offset,ITEM_SLOTS_PER_PAGE/3, new ItemStack(Items.COAL, 64));
         offset += fillItems(offset,ITEM_SLOTS_PER_PAGE/3, new ItemStack(Items.COOKED_CHICKEN, 16));
