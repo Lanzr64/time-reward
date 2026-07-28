@@ -34,6 +34,7 @@ public class LZSavedData extends SavedData {
 
     public LZSavedData() {
         super();
+        SET_DONE = false; // 新世界默认未启用
     }
 
 

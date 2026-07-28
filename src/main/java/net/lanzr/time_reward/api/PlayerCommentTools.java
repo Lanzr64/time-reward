@@ -104,7 +104,7 @@ public class PlayerCommentTools {
                 + (nowDay - Integer.parseInt(parts[2]));
 
         int allMonth = playerDays / LZSavedData.DAYS_PER_LEVEL;
-        commentInfo.level = allMonth;
+        commentInfo.level = Math.max(1, allMonth);
         commentInfo.markTime = timeStr;
         int remainder = playerDays % LZSavedData.DAYS_PER_LEVEL;
         commentInfo.nextLevelRemainDays = (remainder == 0) ? LZSavedData.DAYS_PER_LEVEL : LZSavedData.DAYS_PER_LEVEL - remainder;
