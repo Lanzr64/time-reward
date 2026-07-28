@@ -130,8 +130,8 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
         int panelTop    = topPos + SLOTS_Y_OFFSET;
         int panelLeft   = leftPos + SLOTS_X_OFFSET;
 
-        // Only create scroll panel if content exceeds visible area
-        int contentRows = menu.getLastOccupiedRow() + 1;
+        // Always create scroll panel for full container capacity
+        int contentRows = menu.getContainerSize() / BackpackContainer.COLS;
         if (contentRows * SLOT_SIZE <= panelHeight) {
             scrollPanel = null;
             return;
@@ -533,9 +533,8 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
 
         @Override
         protected int getContentHeight() {
-            int lastOccupiedRow = menu.getLastOccupiedRow();
-            int rows = lastOccupiedRow + 1;
-            return rows * SLOT_SIZE;
+            int totalRows = menu.getContainerSize() / BackpackContainer.COLS;
+            return totalRows * SLOT_SIZE;
         }
 
         @Override

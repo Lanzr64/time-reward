@@ -261,11 +261,11 @@ public class BackpackContainer extends AbstractContainerMenu {
     }
 
     /**
-     * 根据lastOccupiedRow（实际内容范围），而非容器容量，返回客户端允许的最大滚动偏移量。
-     * 这与{@code BackpackScrollPanel.getContentHeight()}的语义一致。
+     * 根据容器总容量，返回客户端允许的最大滚动偏移量。
      */
     private int getClientMaxScrollOffset() {
-        return Math.max(0, lastOccupiedRow + 1 - clientVisibleRows);
+        int totalRows = storageContainer.getContainerSize() / COLS;
+        return Math.max(0, totalRows - clientVisibleRows);
     }
 
     /**
@@ -291,13 +291,11 @@ public class BackpackContainer extends AbstractContainerMenu {
     }
 
     /**
-     * @return 最大滚动偏移量（行数），如果所有行都适合屏幕则返回0
-     * <p>基于{@link #lastOccupiedRow}（实际内容行数）而非容器总容量计算，
-     * 与客户端{@link #getClientMaxScrollOffset()}保持一致，避免两端
-     * 滚动上限不一致导致槽位物品写入错位。</p>
+     * @return 最大滚动偏移量（行数），基于容器总容量计算
      */
     public int getMaxScrollOffset() {
-        return Math.max(0, lastOccupiedRow + 1 - clientVisibleRows);
+        int totalRows = storageContainer.getContainerSize() / COLS;
+        return Math.max(0, totalRows - clientVisibleRows);
     }
 
     private int clampScrollOffset(int offset) {
