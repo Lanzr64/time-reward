@@ -389,17 +389,17 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
         menu.setClientVisibleRows(this.visibleRows);
         this.imageHeight = HEIGHT_WITHOUT_STORAGE_SLOTS + visibleRows * SLOT_SIZE;
         this.inventoryLabelY = imageHeight - 94;
-        // 触发服务器重新同步当前可见槽位的物品
-        PacketDistributor.sendToServer(new net.lanzr.time_reward.network.ScrollChangePayload(
-                menu.containerId, menu.getScrollOffset(), visibleRows));
         super.resize(minecraft, width, height);
         initScrollPanel();
-        // 恢复滚动距离
         if (scrollPanel != null) {
+            // 先恢复滚动距离再钳位，最后重排槽位
             scrollPanel.setScrollDistance(savedScrollDistance);
             scrollPanel.reclamp();
         }
         updateSlotsPosition();
+        // 通知服务端当前滚动位置和可见行数，触发重新同步
+        PacketDistributor.sendToServer(new net.lanzr.time_reward.network.ScrollChangePayload(
+                menu.containerId, menu.getScrollOffset(), visibleRows));
     }
 
     // ======================== Main Render ========================
