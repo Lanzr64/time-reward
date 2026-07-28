@@ -137,7 +137,7 @@ public final class BackpackContainerManager {
                 player.connection.send(new net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket(menu.containerId, menu.getStateId(), slot, stack));
             }
             @Override public void sendCarriedChange(AbstractContainerMenu menu, ItemStack carried) {
-                player.connection.send(new net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket(menu.containerId, menu.getStateId(), -1, carried));
+                player.connection.send(new net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket(-1, menu.getStateId(), -1, carried));
             }
             @Override public void sendDataChange(AbstractContainerMenu menu, int id, int value) {}
         });
