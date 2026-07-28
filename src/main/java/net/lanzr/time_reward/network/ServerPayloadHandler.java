@@ -155,12 +155,8 @@ public final class ServerPayloadHandler {
 
             ClickType clickType = ClickType.values()[data.clickTypeOrdinal()];
             bc.clicked(data.slotId(), data.button(), clickType, player);
-
-            // 点击处理后发送槽位同步
-            sendBackpackSlotSync(player, bc);
-            // 发送当前物品更新
-            PacketDistributor.sendToPlayer(player, new BackpackCarriedUpdatePayload(
-                data.containerId(), bc.getCarried()));
+            // 不发送自定义同步——broadcastChanges() 内部的 super.broadcastChanges()
+            // 已通过真实的 ContainerSynchronizer 发送原版槽位更新
         });
     }
 
