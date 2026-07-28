@@ -96,13 +96,13 @@ public final class ClientPayloadHandler {
                         storage.setItem(actualIndex, items.get(i));
                     }
                 }
-                // Debug: 验证 storage[0] 和 storage[143]（显示槽位范围）
-                ItemStack first = storage.getItem(0);
-                ItemStack last = storage.getItem(BackpackContainer.COLS - 1);
-                if (!first.isEmpty()) {
-                    TimeReward.LOGGER.info("[SlotSync] VERIFY: storage[0] = {} (first={} items={})",
-                            first.getDisplayName().getString(), items.size(), items.isEmpty() ? "empty" : items.get(0).toString());
-                }
+                // Debug: 验证 storage.getItem(0) vs slot.getItem(0) 是否一致
+                ItemStack storageItem = storage.getItem(0);
+                ItemStack slotItem = bc.getSlot(0).getItem();
+                String sItem = storageItem.isEmpty() ? "EMPTY" : storageItem.getDisplayName().getString();
+                String slItem = slotItem.isEmpty() ? "EMPTY" : slotItem.getDisplayName().getString();
+                TimeReward.LOGGER.info("[SlotSync] VERIFY: storage[0]={} slot[0]={} match={}",
+                        sItem, slItem, sItem.equals(slItem) ? "YES" : "DIFFERENT!");
             }
         });
     }
