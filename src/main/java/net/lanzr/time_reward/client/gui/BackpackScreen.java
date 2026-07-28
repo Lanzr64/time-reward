@@ -3,10 +3,8 @@ package net.lanzr.time_reward.client.gui;
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.lanzr.time_reward.TimeReward;
 import net.lanzr.time_reward.inventory.BackpackContainer;
-import net.lanzr.time_reward.inventory.DynamicScrollSlot;
 import net.lanzr.time_reward.network.ScrollChangePayload;
 import net.lanzr.time_reward.network.SortPayload;
-import net.lanzr.time_reward.network.BackpackClickPayload;
 import net.lanzr.time_reward.network.BackpackClosePayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -447,24 +445,6 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
             return true;
         }
 
-        // Q key = drop item from hovered slot
-        if (keyCode == 81 && hoveredSlot != null) {
-            boolean dropAll = hasControlDown();
-            PacketDistributor.sendToServer(new BackpackClickPayload(
-                    menu.containerId, hoveredSlot.index, dropAll ? 1 : 0,
-                    net.minecraft.world.inventory.ClickType.THROW.ordinal(), false));
-            return true;
-        }
-
-        // Number keys 1-9 = hotbar swap from hovered slot
-        if (keyCode >= 49 && keyCode <= 57 && hoveredSlot != null) {
-            int hotbarSlot = keyCode - 49;
-            PacketDistributor.sendToServer(new BackpackClickPayload(
-                    menu.containerId, hoveredSlot.index, hotbarSlot,
-                    net.minecraft.world.inventory.ClickType.SWAP.ordinal(), false));
-            return true;
-        }
-
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -478,35 +458,8 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // Let search box handle clicks first
-        if (searchBox != null) {
-            searchBox.mouseClicked(mouseX, mouseY, button);
-        }
-
-        // Handle container slot clicks via custom payload
-        Slot slot = null;
-        for (int i = 0; i < this.menu.slots.size(); i++) {
-            Slot s = this.menu.slots.get(i);
-            if (this.isHovering(s.x, s.y, 16, 16, mouseX, mouseY) && s.isActive()) {
-                slot = s;
-                break;
-            }
-        }
-
-        if (slot != null) {
-            int slotId = slot.index;
-            int clickTypeOrdinal;
-            if (hasShiftDown()) {
-                clickTypeOrdinal = net.minecraft.world.inventory.ClickType.QUICK_MOVE.ordinal();
-            } else {
-                clickTypeOrdinal = net.minecraft.world.inventory.ClickType.PICKUP.ordinal();
-            }
-
-            PacketDistributor.sendToServer(new BackpackClickPayload(
-                    menu.containerId, slotId, button, clickTypeOrdinal, !menu.getCarried().isEmpty()));
-            return true;
-        }
-
+        // Let vanilla AbstractContainerScreen handle the click - it sends ServerboundContainerClickPacket
+        // which the server's BackpackContainer processes correctly via the real synchronizer
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
