@@ -384,15 +384,16 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
     public void resize(Minecraft minecraft, int width, int height) {
         int newVisibleRows = Math.max(4, Math.min(BackpackContainer.MAX_VISIBLE_ROWS, (height - HEIGHT_WITHOUT_STORAGE_SLOTS) / 18));
         this.visibleRows = newVisibleRows;
+        // 保存当前的滚动距离
+        float savedScrollDistance = (scrollPanel != null) ? scrollPanel.getScrollDistance() : 0;
         menu.setClientVisibleRows(this.visibleRows);
         this.imageHeight = HEIGHT_WITHOUT_STORAGE_SLOTS + visibleRows * SLOT_SIZE;
         this.inventoryLabelY = imageHeight - 94;
         super.resize(minecraft, width, height);
         initScrollPanel();
-        // Re-clamp scroll distance against the (possibly shrunk) panel content height
-        // after the visible-area recompute in super.resize(); prevents the scroll
-        // position from sitting beyond the new maxScroll until the next user input.
+        // 恢复滚动距离
         if (scrollPanel != null) {
+            scrollPanel.setScrollDistance(savedScrollDistance);
             scrollPanel.reclamp();
         }
         updateSlotsPosition();
@@ -609,6 +610,14 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
 
         void resetScrollDistance() {
             scrollDistance = 0;
+        }
+
+        float getScrollDistance() {
+            return scrollDistance;
+        }
+
+        void setScrollDistance(float dist) {
+            scrollDistance = dist;
         }
 
         /** Returns the current row offset derived from the scroll distance. */
