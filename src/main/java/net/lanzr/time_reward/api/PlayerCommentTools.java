@@ -104,7 +104,7 @@ public class PlayerCommentTools {
                 + (nowDay - Integer.parseInt(parts[2]));
 
         int allMonth = playerDays / LZSavedData.DAYS_PER_LEVEL;
-        commentInfo.level = Math.max(1, allMonth);
+        commentInfo.level = allMonth + 1; // 等级从1开始，即0天=1级，30天=2级
         commentInfo.markTime = timeStr;
         int remainder = playerDays % LZSavedData.DAYS_PER_LEVEL;
         commentInfo.nextLevelRemainDays = (remainder == 0) ? LZSavedData.DAYS_PER_LEVEL : LZSavedData.DAYS_PER_LEVEL - remainder;
