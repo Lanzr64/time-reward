@@ -495,27 +495,11 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
 
         if (slot != null) {
             int slotId = slot.index;
-            boolean hasCarried = !menu.getCarried().isEmpty();
             int clickTypeOrdinal;
             if (hasShiftDown()) {
                 clickTypeOrdinal = net.minecraft.world.inventory.ClickType.QUICK_MOVE.ordinal();
             } else {
                 clickTypeOrdinal = net.minecraft.world.inventory.ClickType.PICKUP.ordinal();
-            }
-
-            // Optimistic client-side update: immediately reflect the click result
-            // This prevents the 1-frame flicker while waiting for the server response
-            if (!hasShiftDown()) {
-                ItemStack cursorItem = menu.getCarried();
-                ItemStack slotItem = slot.getItem();
-                if (!cursorItem.isEmpty() && slotItem.isEmpty()) {
-                    // Placing item into empty slot - clear cursor optimistically
-                    menu.setCarried(ItemStack.EMPTY);
-                } else if (cursorItem.isEmpty() && !slotItem.isEmpty()) {
-                    // Picking up item from slot - set cursor optimistically
-                    menu.setCarried(slotItem.copy());
-                }
-                // If both non-empty: swap - don't optimistically update
             }
 
             PacketDistributor.sendToServer(new BackpackClickPayload(
