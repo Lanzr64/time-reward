@@ -69,6 +69,22 @@ public class PlayerRewardManager {
                         return newContainer;
                     }
 
+                    if (savedContainerSize > expectedSize) {
+                        // Container was downsized (config changed): truncate to new size, preserve old items
+                        int newLevel = Math.min(expectedSize / LZSavedData.SLOTS_PER_LEVEL, 60);
+                        SimpleContainer newContainer = new SimpleContainer(expectedSize);
+                        for (int j = 0; j < loadedList.size(); j++) {
+                            CompoundTag slotTag = loadedList.getCompound(j);
+                            int slotIdx = slotTag.getInt("Slot");
+                            if (slotIdx >= expectedSize) continue;
+                            if (slotTag.contains("Item", Tag.TAG_COMPOUND)) {
+                                newContainer.setItem(slotIdx, ItemStack.parse(lookup, slotTag.getCompound("Item")).orElse(ItemStack.EMPTY));
+                            }
+                        }
+                        save(playerUuid, newContainer, lookup, Math.max(savedLevel, newLevel));
+                        return newContainer;
+                    }
+
                     // Same size: deserialize all slots by index
                     SimpleContainer container = new SimpleContainer(expectedSize);
                     for (int j = 0; j < loadedList.size(); j++) {
