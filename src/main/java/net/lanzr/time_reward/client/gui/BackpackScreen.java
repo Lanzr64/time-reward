@@ -382,17 +382,10 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
 
     @Override
     public void resize(Minecraft minecraft, int width, int height) {
-        int newVisibleRows = Math.max(4, Math.min(BackpackContainer.MAX_VISIBLE_ROWS, (height - HEIGHT_WITHOUT_STORAGE_SLOTS) / 18));
-        this.visibleRows = newVisibleRows;
-        // 保存当前的滚动距离
         float savedScrollDistance = (scrollPanel != null) ? scrollPanel.getScrollDistance() : 0;
-        menu.setClientVisibleRows(this.visibleRows);
-        this.imageHeight = HEIGHT_WITHOUT_STORAGE_SLOTS + visibleRows * SLOT_SIZE;
-        this.inventoryLabelY = imageHeight - 94;
         super.resize(minecraft, width, height);
         initScrollPanel();
         if (scrollPanel != null) {
-            // 先恢复滚动距离再钳位，最后重排槽位
             scrollPanel.setScrollDistance(savedScrollDistance);
             scrollPanel.reclamp();
         }
