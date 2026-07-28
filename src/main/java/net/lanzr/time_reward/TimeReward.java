@@ -12,6 +12,7 @@ import net.lanzr.time_reward.network.ScrollChangePayload;
 import net.lanzr.time_reward.network.ServerPayloadHandler;
 import net.lanzr.time_reward.network.SortPayload;
 import net.lanzr.time_reward.save.LZSavedData;
+import net.lanzr.time_reward.save.PlayerRewardManager;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
@@ -124,6 +125,7 @@ public class TimeReward
         if (!world.isClientSide) {
             LZSavedData worldData = world.getDataStorage().computeIfAbsent(LZSavedData.FACTORY, LZSavedData.SAVE_DATA_NAME);
             LZSavedData.setInstance(worldData);
+            PlayerRewardManager.initPath(world);
         }
         PlayerCommentTools.init();
     }
