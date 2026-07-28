@@ -9,6 +9,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerSynchronizer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.lang.reflect.Field;
@@ -129,8 +130,17 @@ public final class BackpackContainerManager {
                 scrollOffset
         );
 
-        // 设置无操作同步器以防止原版自动广播
-        container.setSynchronizer(NO_OP_SYNC);
+        // 设置真实的 ContainerSynchronizer 以启用原版槽位同步
+        container.setSynchronizer(new ContainerSynchronizer() {
+            @Override public void sendInitialData(AbstractContainerMenu menu, NonNullList<ItemStack> items, ItemStack carried, int[] data) {}
+            @Override public void sendSlotChange(AbstractContainerMenu menu, int slot, ItemStack stack) {
+                player.connection.send(new net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket(menu.containerId, menu.getStateId(), slot, stack));
+            }
+            @Override public void sendCarriedChange(AbstractContainerMenu menu, ItemStack carried) {
+                player.connection.send(new net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket(menu.containerId, menu.getStateId(), -1, carried));
+            }
+            @Override public void sendDataChange(AbstractContainerMenu menu, int id, int value) {}
+        });
 
         // 附加保存回调
         container.setSaveCallback(saveCallback);

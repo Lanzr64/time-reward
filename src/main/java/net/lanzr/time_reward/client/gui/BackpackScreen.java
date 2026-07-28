@@ -405,14 +405,6 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        // 强制渲染所有显示槽位的物品（绕过可能的 NeoForge patch 问题）
-        for (int xx = 0; xx < BackpackContainer.TOTAL_DISPLAY_SLOTS; xx++) {
-            Slot slot = menu.getSlot(xx);
-            ItemStack st = slot.getItem();
-            if (!st.isEmpty()) {
-                guiGraphics.renderItem(st, slot.x + leftPos, slot.y + topPos);
-            }
-        }
         // NeoForge's patched AbstractContainerScreen.render() omits renderTooltip(),
         // so we must call it here for slot hover tooltips to show.
         super.renderTooltip(guiGraphics, mouseX, mouseY);
