@@ -52,7 +52,7 @@ public class PlayerRewardManager {
 
                     if (savedContainerSize < expectedSize) {
                         // Player leveled up: create larger container, preserve old items, fill new from admin
-                        int currentLevel = Math.min(expectedSize / 15, 60);
+                        int currentLevel = Math.min(expectedSize / LZSavedData.SLOTS_PER_LEVEL, 60);
                         SimpleContainer newContainer = new SimpleContainer(expectedSize);
                         for (int j = 0; j < loadedList.size(); j++) {
                             CompoundTag slotTag = loadedList.getCompound(j);
@@ -92,7 +92,7 @@ public class PlayerRewardManager {
         for (int i = 0; i < expectedSize; i++) {
             container.setItem(i, adminPool.getItem(i).copy());
         }
-        save(playerUuid, container, lookup, Math.min(expectedSize / 15, 60));
+        save(playerUuid, container, lookup, Math.min(expectedSize / LZSavedData.SLOTS_PER_LEVEL, 60));
         return container;
     }
 

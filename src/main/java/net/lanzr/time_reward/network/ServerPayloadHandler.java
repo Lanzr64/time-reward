@@ -50,7 +50,7 @@ public final class ServerPayloadHandler {
 
             // 使用当前等级和存储等级中的较高者作为容器大小
             int effectiveLevel = Math.max(currentLevel, storedLevel);
-            int expectedSlots = Math.min(effectiveLevel * 15, 900);
+            int expectedSlots = Math.min(effectiveLevel * LZSavedData.SLOTS_PER_LEVEL, LZSavedData.CONTAINER_SIZE);
 
             HolderLookup.Provider lookup = player.serverLevel().registryAccess();
             SimpleContainer container = PlayerRewardManager.loadOrCreate(

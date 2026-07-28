@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import net.lanzr.time_reward.save.LZSavedData;
 import java.io.*;
 import java.time.LocalDate;
 
@@ -102,11 +103,11 @@ public class PlayerCommentTools {
                 + (nowMonth - Integer.parseInt(parts[1])) * 30
                 + (nowDay - Integer.parseInt(parts[2]));
 
-        int allMonth = playerDays / 30;
+        int allMonth = playerDays / LZSavedData.DAYS_PER_LEVEL;
         commentInfo.level = allMonth;
         commentInfo.markTime = timeStr;
-        int remainder = playerDays % 30;
-        commentInfo.nextLevelRemainDays = (remainder == 0) ? 30 : 30 - remainder;
+        int remainder = playerDays % LZSavedData.DAYS_PER_LEVEL;
+        commentInfo.nextLevelRemainDays = (remainder == 0) ? LZSavedData.DAYS_PER_LEVEL : LZSavedData.DAYS_PER_LEVEL - remainder;
         return 0;
     }
 }
