@@ -40,6 +40,9 @@ public final class ServerPayloadHandler {
         ctx.enqueueWork(() -> {
             if (!(ctx.player() instanceof ServerPlayer player)) return;
 
+            // 检查奖励是否已启用（需管理员执行 /tyj-reward admin enable）
+            if (!LZSavedData.SET_DONE) return;
+
             // 从玩家评论获取当前奖励等级（与/tyj-reward get相同）
             CommentInfo commentInfo = new CommentInfo();
             int haveReward = PlayerCommentTools.getPlayerComment(player.getName().getString(), commentInfo);
