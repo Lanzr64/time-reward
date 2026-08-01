@@ -1,0 +1,554 @@
+﻿To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :cacheVersionManifest1.21 UP-TO-DATE
+> Task :cacheVersionExecutableClient1.21 UP-TO-DATE
+> Task :cacheVersionExecutableServer1.21 UP-TO-DATE
+> Task :cacheVersionMappingsClient1.21 UP-TO-DATE
+> Task :cacheVersionMappingsServer1.21 UP-TO-DATE
+> Task :neoFormListLibraries
+> Task :neoFormStripClient UP-TO-DATE
+> Task :neoFormExtractServer UP-TO-DATE
+> Task :neoFormStripServer UP-TO-DATE
+> Task :neoFormMerge UP-TO-DATE
+> Task :neoFormMergeMappings UP-TO-DATE
+> Task :neoFormRename UP-TO-DATE
+> Task :neoFormDecompile UP-TO-DATE
+> Task :neoFormApplyForgesAccessTransformer UP-TO-DATE
+> Task :neoFormUserAccessTransformerGenerator
+> Task :neoFormApplyUserAccessTransformer UP-TO-DATE
+> Task :neoFormInject UP-TO-DATE
+> Task :neoFormPatch UP-TO-DATE
+> Task :neoFormPatchUserDev UP-TO-DATE
+> Task :neoFormApplyOfficialMappings
+> Task :neoFormApplyParchment UP-TO-DATE
+> Task :neoFormUnzipSources
+> Task :create1.21ClientExtraJar UP-TO-DATE
+> Task :selectRawArtifactNg_dummy_ng.net.minecraft_client_1.21_client-extra
+
+> Task :neoFormRecompile
+.\gradlew.bat : D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\u
+nzipSources\unpacked\net\minecraft\world\entity\decoration\ArmorStand.java:5: 错误: 程序包net.minecraft.core不存在
+所在位置 行:1 字符: 53
++ ... ime-reward\1.21; .\gradlew.bat compileJava --rerun-tasks 2>&1 | Out-F ...
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (D:\lz_workplace...necraft.core不存在:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+import net.minecraft.core.BlockPos;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:6: 错误: 程序包net.minecraft.core不存在
+import net.minecraft.core.NonNullList;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:7: 错误: 程序包net.minecraft.core不存在
+import net.minecraft.core.Rotations;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:8: 错误: 程序包net.minecraft.core.component不存在
+import net.minecraft.core.component.DataComponents;
+                                   ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:9: 错误: 程序包net.minecraft.core.particles不存在
+import net.minecraft.core.particles.BlockParticleOption;
+                                   ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:10: 错误: 程序包net.minecraft.core.particles不存在
+import net.minecraft.core.particles.ParticleTypes;
+                                   ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:11: 错误: 程序包net.minecraft.nbt不存在
+import net.minecraft.nbt.CompoundTag;
+                        ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:12: 错误: 程序包net.minecraft.nbt不存在
+import net.minecraft.nbt.ListTag;
+                        ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:13: 错误: 程序包net.minecraft.network.syncher不存在
+import net.minecraft.network.syncher.EntityDataAccessor;
+                                    ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:14: 错误: 程序包net.minecraft.network.syncher不存在
+import net.minecraft.network.syncher.EntityDataSerializers;
+                                    ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:15: 错误: 程序包net.minecraft.network.syncher不存在
+import net.minecraft.network.syncher.SynchedEntityData;
+                                    ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:16: 错误: 程序包net.minecraft.server.level不存在
+import net.minecraft.server.level.ServerLevel;
+                                 ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:17: 错误: 程序包net.minecraft.sounds不存在
+import net.minecraft.sounds.SoundEvent;
+                           ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:18: 错误: 程序包net.minecraft.sounds不存在
+import net.minecraft.sounds.SoundEvents;
+                           ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:19: 错误: 程序包net.minecraft.tags不存在
+import net.minecraft.tags.DamageTypeTags;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:20: 错误: 找不到符号
+import net.minecraft.world.InteractionHand;
+                          ^
+  符号:   类 InteractionHand
+  位置: 程序包 net.minecraft.world
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:21: 错误: 找不到符号
+import net.minecraft.world.InteractionResult;
+                          ^
+  符号:   类 InteractionResult
+  位置: 程序包 net.minecraft.world
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:22: 错误: 程序包net.minecraft.world.damagesource不存在
+import net.minecraft.world.damagesource.DamageSource;
+                                       ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:23: 错误: 找不到符号
+import net.minecraft.world.entity.Entity;
+                                 ^
+  符号:   类 Entity
+  位置: 程序包 net.minecraft.world.entity
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:24: 错误: 找不到符号
+import net.minecraft.world.entity.EntityDimensions;
+                                 ^
+  符号:   类 EntityDimensions
+  位置: 程序包 net.minecraft.world.entity
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:25: 错误: 找不到符号
+import net.minecraft.world.entity.EntityType;
+                                 ^
+  符号:   类 EntityType
+  位置: 程序包 net.minecraft.world.entity
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:26: 错误: 找不到符号
+import net.minecraft.world.entity.EquipmentSlot;
+                                 ^
+  符号:   类 EquipmentSlot
+  位置: 程序包 net.minecraft.world.entity
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:27: 错误: 找不到符号
+import net.minecraft.world.entity.HumanoidArm;
+                                 ^
+  符号:   类 HumanoidArm
+  位置: 程序包 net.minecraft.world.entity
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:28: 错误: 找不到符号
+import net.minecraft.world.entity.LightningBolt;
+                                 ^
+  符号:   类 LightningBolt
+  位置: 程序包 net.minecraft.world.entity
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:29: 错误: 找不到符号
+import net.minecraft.world.entity.LivingEntity;
+                                 ^
+  符号:   类 LivingEntity
+  位置: 程序包 net.minecraft.world.entity
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:30: 错误: 找不到符号
+import net.minecraft.world.entity.Pose;
+                                 ^
+  符号:   类 Pose
+  位置: 程序包 net.minecraft.world.entity
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:31: 错误: 程序包net.minecraft.world.entity.ai.attributes不存在
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+                                               ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:32: 错误: 程序包net.minecraft.world.entity.ai.attributes不存在
+import net.minecraft.world.entity.ai.attributes.Attributes;
+                                               ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:33: 错误: 程序包net.minecraft.world.entity.player不存在
+import net.minecraft.world.entity.player.Player;
+                                        ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:34: 错误: 程序包net.minecraft.world.entity.vehicle不存在
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
+                                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:47: 错误: 找不到符号
+public class ArmorStand extends LivingEntity {
+                                ^
+  符号: 类 LivingEntity
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:50: 错误: 找不到符号
+    private static final Rotations DEFAULT_HEAD_POSE = new Rotations(0.0F, 0.0F, 0.0F);
+                         ^
+  符号:   类 Rotations
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:51: 错误: 找不到符号
+    private static final Rotations DEFAULT_BODY_POSE = new Rotations(0.0F, 0.0F, 0.0F);
+                         ^
+  符号:   类 Rotations
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:52: 错误: 找不到符号
+    private static final Rotations DEFAULT_LEFT_ARM_POSE = new Rotations(-10.0F, 0.0F, -10.0F);
+                         ^
+  符号:   类 Rotations
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:53: 错误: 找不到符号
+    private static final Rotations DEFAULT_RIGHT_ARM_POSE = new Rotations(-15.0F, 0.0F, 10.0F);
+                         ^
+  符号:   类 Rotations
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:54: 错误: 找不到符号
+    private static final Rotations DEFAULT_LEFT_LEG_POSE = new Rotations(-1.0F, 0.0F, -1.0F);
+                         ^
+  符号:   类 Rotations
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:55: 错误: 找不到符号
+    private static final Rotations DEFAULT_RIGHT_LEG_POSE = new Rotations(1.0F, 0.0F, 1.0F);
+                         ^
+  符号:   类 Rotations
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:56: 错误: 找不到符号
+    private static final EntityDimensions MARKER_DIMENSIONS = EntityDimensions.fixed(0.0F, 0.0F);
+                         ^
+  符号:   类 EntityDimensions
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:57: 错误: 找不到符号
+    private static final EntityDimensions BABY_DIMENSIONS = EntityType.ARMOR_STAND.getDimensions().scale(0.5F).withEyeH
+eight(0.9875F);
+                         ^
+  符号:   类 EntityDimensions
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:68: 错误: 找不到符号
+    public static final EntityDataAccessor<Byte> DATA_CLIENT_FLAGS = SynchedEntityData.defineId(ArmorStand.class, Entit
+yDataSerializers.BYTE);
+                        ^
+  符号:   类 EntityDataAccessor
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:69: 错误: 找不到符号
+    public static final EntityDataAccessor<Rotations> DATA_HEAD_POSE = SynchedEntityData.defineId(ArmorStand.class, Ent
+ityDataSerializers.ROTATIONS);
+                        ^
+  符号:   类 EntityDataAccessor
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:69: 错误: 找不到符号
+    public static final EntityDataAccessor<Rotations> DATA_HEAD_POSE = SynchedEntityData.defineId(ArmorStand.class, Ent
+ityDataSerializers.ROTATIONS);
+                                           ^
+  符号:   类 Rotations
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:70: 错误: 找不到符号
+    public static final EntityDataAccessor<Rotations> DATA_BODY_POSE = SynchedEntityData.defineId(ArmorStand.class, Ent
+ityDataSerializers.ROTATIONS);
+                        ^
+  符号:   类 EntityDataAccessor
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:70: 错误: 找不到符号
+    public static final EntityDataAccessor<Rotations> DATA_BODY_POSE = SynchedEntityData.defineId(ArmorStand.class, Ent
+ityDataSerializers.ROTATIONS);
+                                           ^
+  符号:   类 Rotations
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:71: 错误: 找不到符号
+    public static final EntityDataAccessor<Rotations> DATA_LEFT_ARM_POSE = SynchedEntityData.defineId(ArmorStand.class,
+ EntityDataSerializers.ROTATIONS);
+                        ^
+  符号:   类 EntityDataAccessor
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:71: 错误: 找不到符号
+    public static final EntityDataAccessor<Rotations> DATA_LEFT_ARM_POSE = SynchedEntityData.defineId(ArmorStand.class,
+ EntityDataSerializers.ROTATIONS);
+                                           ^
+  符号:   类 Rotations
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:72: 错误: 找不到符号
+    public static final EntityDataAccessor<Rotations> DATA_RIGHT_ARM_POSE = SynchedEntityData.defineId(ArmorStand.class
+, EntityDataSerializers.ROTATIONS);
+                        ^
+  符号:   类 EntityDataAccessor
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:72: 错误: 找不到符号
+    public static final EntityDataAccessor<Rotations> DATA_RIGHT_ARM_POSE = SynchedEntityData.defineId(ArmorStand.class
+, EntityDataSerializers.ROTATIONS);
+                                           ^
+  符号:   类 Rotations
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:73: 错误: 找不到符号
+    public static final EntityDataAccessor<Rotations> DATA_LEFT_LEG_POSE = SynchedEntityData.defineId(ArmorStand.class,
+ EntityDataSerializers.ROTATIONS);
+                        ^
+  符号:   类 EntityDataAccessor
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:73: 错误: 找不到符号
+    public static final EntityDataAccessor<Rotations> DATA_LEFT_LEG_POSE = SynchedEntityData.defineId(ArmorStand.class,
+ EntityDataSerializers.ROTATIONS);
+                                           ^
+  符号:   类 Rotations
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:74: 错误: 找不到符号
+    public static final EntityDataAccessor<Rotations> DATA_RIGHT_LEG_POSE = SynchedEntityData.defineId(ArmorStand.class
+, EntityDataSerializers.ROTATIONS);
+                        ^
+  符号:   类 EntityDataAccessor
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:74: 错误: 找不到符号
+    public static final EntityDataAccessor<Rotations> DATA_RIGHT_LEG_POSE = SynchedEntityData.defineId(ArmorStand.class
+, EntityDataSerializers.ROTATIONS);
+                                           ^
+  符号:   类 Rotations
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:75: 错误: 找不到符号
+    private static final Predicate<Entity> RIDABLE_MINECARTS = p_31582_ -> p_31582_ instanceof AbstractMinecart
+                                   ^
+  符号:   类 Entity
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\entity\decoration\ArmorStand.java:77: 错误: 找不到符号
+    private final NonNullList<ItemStack> handItems = NonNullList.withSize(2, ItemStack.EMPTY);
+                  ^
+  符号:   类 NonNullList
+  位置: 类 ArmorStand
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:23: 错误: 找不到符号
+import net.minecraft.ChatFormatting;
+                    ^
+  符号:   类 ChatFormatting
+  位置: 程序包 net.minecraft
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:24: 错误: 程序包net.minecraft.advancements不存在
+import net.minecraft.advancements.CriteriaTriggers;
+                                 ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:25: 错误: 程序包net.minecraft.core不存在
+import net.minecraft.core.BlockPos;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:26: 错误: 程序包net.minecraft.core不存在
+import net.minecraft.core.Holder;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:27: 错误: 程序包net.minecraft.core不存在
+import net.minecraft.core.HolderLookup;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:28: 错误: 程序包net.minecraft.core不存在
+import net.minecraft.core.HolderSet;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:29: 错误: 程序包net.minecraft.core不存在
+import net.minecraft.core.NonNullList;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:30: 错误: 程序包net.minecraft.core.component不存在
+import net.minecraft.core.component.DataComponentHolder;
+                                   ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:31: 错误: 程序包net.minecraft.core.component不存在
+import net.minecraft.core.component.DataComponentMap;
+                                   ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:32: 错误: 程序包net.minecraft.core.component不存在
+import net.minecraft.core.component.DataComponentPatch;
+                                   ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:33: 错误: 程序包net.minecraft.core.component不存在
+import net.minecraft.core.component.DataComponentType;
+                                   ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:34: 错误: 程序包net.minecraft.core.component不存在
+import net.minecraft.core.component.DataComponents;
+                                   ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:35: 错误: 程序包net.minecraft.core.component不存在
+import net.minecraft.core.component.PatchedDataComponentMap;
+                                   ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:36: 错误: 程序包net.minecraft.core.registries不存在
+import net.minecraft.core.registries.BuiltInRegistries;
+                                    ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:37: 错误: 程序包net.minecraft.core.registries不存在
+import net.minecraft.core.registries.Registries;
+                                    ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:38: 错误: 程序包net.minecraft.nbt不存在
+import net.minecraft.nbt.CompoundTag;
+                        ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:39: 错误: 程序包net.minecraft.nbt不存在
+import net.minecraft.nbt.NbtOps;
+                        ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:40: 错误: 程序包net.minecraft.nbt不存在
+import net.minecraft.nbt.Tag;
+                        ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:41: 错误: 程序包net.minecraft.network不存在
+import net.minecraft.network.RegistryFriendlyByteBuf;
+                            ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:42: 错误: 程序包net.minecraft.network.chat不存在
+import net.minecraft.network.chat.CommonComponents;
+                                 ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:43: 错误: 程序包net.minecraft.network.chat不存在
+import net.minecraft.network.chat.Component;
+                                 ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:44: 错误: 程序包net.minecraft.network.chat不存在
+import net.minecraft.network.chat.ComponentUtils;
+                                 ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:45: 错误: 程序包net.minecraft.network.chat不存在
+import net.minecraft.network.chat.HoverEvent;
+                                 ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:46: 错误: 程序包net.minecraft.network.chat不存在
+import net.minecraft.network.chat.MutableComponent;
+                                 ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:47: 错误: 程序包net.minecraft.network.chat不存在
+import net.minecraft.network.chat.Style;
+                                 ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:48: 错误: 程序包net.minecraft.network.codec不存在
+import net.minecraft.network.codec.ByteBufCodecs;
+                                  ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:49: 错误: 程序包net.minecraft.network.codec不存在
+import net.minecraft.network.codec.StreamCodec;
+                                  ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:50: 错误: 程序包net.minecraft.resources不存在
+import net.minecraft.resources.RegistryOps;
+                              ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:51: 错误: 程序包net.minecraft.server.level不存在
+import net.minecraft.server.level.ServerLevel;
+                                 ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:52: 错误: 程序包net.minecraft.server.level不存在
+import net.minecraft.server.level.ServerPlayer;
+                                 ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:53: 错误: 程序包net.minecraft.sounds不存在
+import net.minecraft.sounds.SoundEvent;
+                           ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:54: 错误: 程序包net.minecraft.stats不存在
+import net.minecraft.stats.Stats;
+                          ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:55: 错误: 程序包net.minecraft.tags不存在
+import net.minecraft.tags.DamageTypeTags;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:56: 错误: 程序包net.minecraft.tags不存在
+import net.minecraft.tags.TagKey;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:57: 错误: 程序包net.minecraft.util不存在
+import net.minecraft.util.ExtraCodecs;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:58: 错误: 程序包net.minecraft.util不存在
+import net.minecraft.util.Mth;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:59: 错误: 程序包net.minecraft.util不存在
+import net.minecraft.util.NullOps;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:60: 错误: 程序包net.minecraft.util不存在
+import net.minecraft.util.Unit;
+                         ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:61: 错误: 找不到符号
+import net.minecraft.world.InteractionHand;
+                          ^
+  符号:   类 InteractionHand
+  位置: 程序包 net.minecraft.world
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:62: 错误: 找不到符号
+import net.minecraft.world.InteractionResult;
+                          ^
+  符号:   类 InteractionResult
+  位置: 程序包 net.minecraft.world
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:63: 错误: 找不到符号
+import net.minecraft.world.InteractionResultHolder;
+                          ^
+  符号:   类 InteractionResultHolder
+  位置: 程序包 net.minecraft.world
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:64: 错误: 程序包net.minecraft.world.damagesource不存在
+import net.minecraft.world.damagesource.DamageSource;
+                                       ^
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:65: 错误: 找不到符号
+import net.minecraft.world.entity.Entity;
+                                 ^
+  符号:   类 Entity
+  位置: 程序包 net.minecraft.world.entity
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:66: 错误: 找不到符号
+import net.minecraft.world.entity.EquipmentSlot;
+                                 ^
+  符号:   类 EquipmentSlot
+  位置: 程序包 net.minecraft.world.entity
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:67: 错误: 找不到符号
+import net.minecraft.world.entity.EquipmentSlotGroup;
+                                 ^
+  符号:   类 EquipmentSlotGroup
+  位置: 程序包 net.minecraft.world.entity
+D:\lz_workplace\java\lzProject\time-reward\1.21\build\neoForm\neoFormJoined1.21-20240613.152323\steps\unzipSources\unpa
+cked\net\minecraft\world\item\ItemStack.java:68: 错误: 找不到符号
+import net.minecraft.world.entity.LivingEntity;
+                                 ^
+  符号:   类 LivingEntity
+  位置: 程序包 net.minecraft.world.entity
+注: 某些输入文件使用或覆盖了已过时的 API。
+注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+注: 某些输入文件使用了未经检查或不安全的操作。
+注: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+注: 某些消息已经过简化; 请使用 -Xdiags:verbose 重新编译以获得完整输出
+100 个错误
+
+> Task :neoFormRecompile FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':neoFormRecompile'.
+> Failed to recompile using caching.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1m 29s
+25 actionable tasks: 6 executed, 19 up-to-date

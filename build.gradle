@@ -29,8 +29,9 @@ base {
 // Mojang ships Java 21 to end users starting in 1.20.5, so mods should target Java 21.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-//minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
-//minecraft.accessTransformers.entry public net.minecraft.client.Minecraft textureManager # textureManager
+minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
+minecraft.accessTransformers.entry 'public-f net.minecraft.world.inventory.Slot x'
+minecraft.accessTransformers.entry 'public-f net.minecraft.world.inventory.Slot y'
 
 // Default run configurations.
 // These can be tweaked, removed, or duplicated as needed.
@@ -115,7 +116,7 @@ dependencies {
 
     // Example project dependency using a sister or child project:
     // implementation project(":myproject")
-
+    
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
@@ -171,3 +172,14 @@ idea {
         downloadJavadoc = true
     }
 }
+// 构建完成后导出 JAR 到指定路径
+tasks.register('exportJar', Copy) {
+    dependsOn 'jar'
+    from jar.archiveFile
+    into 'D:/lz_workplace/java/lzProject/output'
+}
+
+tasks.named('build').configure {
+    dependsOn 'exportJar'
+}
+

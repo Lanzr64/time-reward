@@ -17,7 +17,20 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 public class PlayerRewardManager {
-    private static final Path PLAYER_REWARDS_PATH = Paths.get("lzFiles", "player-rewards");
+    private static Path playerRewardsPath = Paths.get("lzFiles", "player-rewards"); // fallback path
+
+    /**
+     * 设置玩家奖励存档路径（基于世界存档目录）。
+     * 应在服务端世界加载完成后调用一次。
+     */
+    public static void initPath(net.minecraft.server.level.ServerLevel level) {
+        playerRewardsPath = level.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)
+                .resolve("lzFiles/player-rewards");
+    }
+
+    private static Path getPath() {
+        return playerRewardsPath;
+    }
     private static final String TAG_ITEMS = "Items";
     private static final String TAG_LEVEL = "Level";
     private static final String TAG_VERSION = "Version";
@@ -27,13 +40,13 @@ public class PlayerRewardManager {
 
     public static SimpleContainer loadOrCreate(UUID playerUuid, int expectedSize, SimpleContainer adminPool, HolderLookup.Provider lookup) {
         try {
-            Files.createDirectories(PLAYER_REWARDS_PATH);
+            Files.createDirectories(playerRewardsPath);
         } catch (IOException e) {
-            System.err.println("[PlayerRewardManager] Cannot create directory: " + PLAYER_REWARDS_PATH);
+            System.err.println("[PlayerRewardManager] Cannot create directory: " + playerRewardsPath);
             e.printStackTrace();
         }
 
-        Path file = PLAYER_REWARDS_PATH.resolve(playerUuid.toString() + ".dat");
+        Path file = playerRewardsPath.resolve(playerUuid.toString() + ".dat");
 
         synchronized (FILE_LOCK) {
             boolean fileExists = Files.exists(file);
@@ -52,11 +65,12 @@ public class PlayerRewardManager {
 
                     if (savedContainerSize < expectedSize) {
                         // Player leveled up: create larger container, preserve old items, fill new from admin
-                        int currentLevel = Math.min(expectedSize / 15, 60);
+                        int currentLevel = Math.min(expectedSize / LZSavedData.SLOTS_PER_LEVEL, 60);
                         SimpleContainer newContainer = new SimpleContainer(expectedSize);
                         for (int j = 0; j < loadedList.size(); j++) {
                             CompoundTag slotTag = loadedList.getCompound(j);
                             int slotIdx = slotTag.getInt("Slot");
+                            if (slotIdx >= expectedSize) continue;
                             if (slotTag.contains("Item", Tag.TAG_COMPOUND)) {
                                 newContainer.setItem(slotIdx, ItemStack.parse(lookup, slotTag.getCompound("Item")).orElse(ItemStack.EMPTY));
                             }
@@ -68,11 +82,28 @@ public class PlayerRewardManager {
                         return newContainer;
                     }
 
+                    if (savedContainerSize > expectedSize) {
+                        // Container was downsized (config changed): truncate to new size, preserve old items
+                        int newLevel = Math.min(expectedSize / LZSavedData.SLOTS_PER_LEVEL, 60);
+                        SimpleContainer newContainer = new SimpleContainer(expectedSize);
+                        for (int j = 0; j < loadedList.size(); j++) {
+                            CompoundTag slotTag = loadedList.getCompound(j);
+                            int slotIdx = slotTag.getInt("Slot");
+                            if (slotIdx >= expectedSize) continue;
+                            if (slotTag.contains("Item", Tag.TAG_COMPOUND)) {
+                                newContainer.setItem(slotIdx, ItemStack.parse(lookup, slotTag.getCompound("Item")).orElse(ItemStack.EMPTY));
+                            }
+                        }
+                        save(playerUuid, newContainer, lookup, Math.max(savedLevel, newLevel));
+                        return newContainer;
+                    }
+
                     // Same size: deserialize all slots by index
                     SimpleContainer container = new SimpleContainer(expectedSize);
                     for (int j = 0; j < loadedList.size(); j++) {
                         CompoundTag slotTag = loadedList.getCompound(j);
                         int slotIdx = slotTag.getInt("Slot");
+                        if (slotIdx >= expectedSize) continue;
                         if (slotTag.contains("Item", Tag.TAG_COMPOUND)) {
                             container.setItem(slotIdx, ItemStack.parse(lookup, slotTag.getCompound("Item")).orElse(ItemStack.EMPTY));
                         }
@@ -90,7 +121,7 @@ public class PlayerRewardManager {
         for (int i = 0; i < expectedSize; i++) {
             container.setItem(i, adminPool.getItem(i).copy());
         }
-        save(playerUuid, container, lookup, Math.min(expectedSize / 15, 60));
+        save(playerUuid, container, lookup, Math.min(expectedSize / LZSavedData.SLOTS_PER_LEVEL, 60));
         return container;
     }
 
@@ -100,10 +131,10 @@ public class PlayerRewardManager {
 
     public static void save(UUID playerUuid, SimpleContainer container, HolderLookup.Provider lookup, int level) {
         synchronized (FILE_LOCK) {
-            Path file = PLAYER_REWARDS_PATH.resolve(playerUuid.toString() + ".dat");
-            Path tempFile = PLAYER_REWARDS_PATH.resolve(playerUuid.toString() + ".tmp");
+            Path file = playerRewardsPath.resolve(playerUuid.toString() + ".dat");
+            Path tempFile = playerRewardsPath.resolve(playerUuid.toString() + ".tmp");
             try {
-                Files.createDirectories(PLAYER_REWARDS_PATH);
+                Files.createDirectories(playerRewardsPath);
 
                 int saveLevel = level;
                 if (saveLevel < 0) {
@@ -142,7 +173,7 @@ public class PlayerRewardManager {
     }
 
     public static int getStoredLevel(UUID playerUuid) {
-        Path file = PLAYER_REWARDS_PATH.resolve(playerUuid.toString() + ".dat");
+        Path file = playerRewardsPath.resolve(playerUuid.toString() + ".dat");
         synchronized (FILE_LOCK) {
             try {
                 if (Files.exists(file) && Files.size(file) > 0) {

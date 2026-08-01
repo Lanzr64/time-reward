@@ -1,0 +1,101 @@
+﻿To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :cacheVersionManifest1.21 UP-TO-DATE
+> Task :cacheVersionExecutableClient1.21 UP-TO-DATE
+> Task :cacheVersionExecutableServer1.21 UP-TO-DATE
+> Task :cacheVersionMappingsClient1.21 UP-TO-DATE
+> Task :cacheVersionMappingsServer1.21 UP-TO-DATE
+> Task :neoFormListLibraries UP-TO-DATE
+> Task :neoFormStripClient UP-TO-DATE
+> Task :neoFormExtractServer UP-TO-DATE
+> Task :neoFormStripServer UP-TO-DATE
+> Task :neoFormMerge UP-TO-DATE
+> Task :neoFormMergeMappings UP-TO-DATE
+> Task :neoFormRename UP-TO-DATE
+> Task :neoFormDecompile UP-TO-DATE
+> Task :neoFormApplyForgesAccessTransformer UP-TO-DATE
+> Task :neoFormUserAccessTransformerGenerator UP-TO-DATE
+> Task :neoFormApplyUserAccessTransformer UP-TO-DATE
+> Task :neoFormInject UP-TO-DATE
+> Task :neoFormPatch UP-TO-DATE
+> Task :neoFormPatchUserDev UP-TO-DATE
+> Task :neoFormApplyOfficialMappings UP-TO-DATE
+> Task :neoFormApplyParchment UP-TO-DATE
+> Task :neoFormUnzipSources UP-TO-DATE
+> Task :create1.21ClientExtraJar UP-TO-DATE
+> Task :selectRawArtifactNg_dummy_ng.net.minecraft_client_1.21_client-extra UP-TO-DATE
+> Task :neoFormRecompile UP-TO-DATE
+> Task :neoFormPackRecomp UP-TO-DATE
+> Task :supplyRawJarForneoFormJoined1.21-20240613.152323 UP-TO-DATE
+> Task :selectRawArtifactNg_dummy_ng.net.neoforged_neoforge_21.0.167 UP-TO-DATE
+
+> Task :compileJava
+gradlew.bat : D:\lz_workplace\java\lzProject\time-reward\1.21\src\main\java\net\lanzr\time_reward\client\gui\BackpackSc
+reen.java:545: 错误: 找不到符号
+所在位置 行:1 字符: 1
++ & .\gradlew compileJava --console=plain 2>&1 | Out-File -FilePath ".o ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (D:\lz_workplace...:545: 错误: 找不到符号:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+                    + " getMaxScroll()=" + getMaxScroll()
+                                           ^
+  符号:   方法 getMaxScroll()
+  位置: 类 BackpackScreen.BackpackScrollPanel
+D:\lz_workplace\java\lzProject\time-reward\1.21\src\main\java\net\lanzr\time_reward\client\gui\BackpackScreen.java:564:
+ 错误: 找不到符号
+            return getMaxScroll();
+                   ^
+  符号:   方法 getMaxScroll()
+  位置: 类 BackpackScreen.BackpackScrollPanel
+D:\lz_workplace\java\lzProject\time-reward\1.21\src\main\java\net\lanzr\time_reward\client\gui\BackpackScreen.java:577:
+ 错误: 找不到符号
+            int maxScroll = getMaxScroll();
+                            ^
+  符号:   方法 getMaxScroll()
+  位置: 类 BackpackScreen.BackpackScrollPanel
+注: 某些输入文件使用或覆盖了已过时的 API。
+注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+3 个错误
+
+> Task :compileJava FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 20s
+29 actionable tasks: 1 executed, 28 up-to-date
+
+============================================================
+Task-2 evidence summary (added by implementation agent)
+============================================================
+Files modified: src/main/java/net/lanzr/time_reward/inventory/BackpackContainer.java ONLY
+Changes: +1 field (lastOccupiedDirty = true) + 3 methods
+  - public int getContainerSize()        -> delegates to storageContainer.getContainerSize()
+  - public void setLastOccupiedRow(int)   -> field-only setter, NO broadcastChanges()
+  - public int recomputeLastOccupiedRow() -> server-side, scans top-down, uses COLS,
+                                            empty container returns -1 (per plan; not 0)
+Verification approach:
+  1. Captured baseline (git-stashed BackpackContainer diff) -> 3 errors, ALL in BackpackScreen.java
+     (BackpackScrollPanel.getMaxScroll() not found at lines 545/564/577).
+  2. Stash-popped my change, re-ran compileJava -> IDENTICAL 3 errors.
+     ZERO BackpackContainer.java errors in either run.
+     ZERO mentions of getContainerSize / setLastOccupiedRow / recomputeLastOccupiedRow / lastOccupiedDirty.
+Conclusion:
+  * BackpackContainer.java with Task-2 additions compiles cleanly.
+  * Build is currently in a pre-existing FAILING state due to BackpackScreen.java
+    references to getMaxScroll() — these belong to a later wave (Task 5:
+    "client sync + re-clamp" per plan .omo/plans/backpack-scroll-and-mask-fix.md).
+  * The task-2 verification criterion "BackpackContainer compiles cleanly with all
+    existing callers still OK" is satisfied: no new callers introduced, no new
+    errors, no behavior changes to existing accessors.
+Note: An earlier "27 errors" run was a gradle incremental-cache stale-state
+  artifact observed mid-stash; the clean recompile reproduces exactly the same
+  3 baseline errors (no BackpackContainer involvement).

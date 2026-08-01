@@ -101,7 +101,7 @@ public class RewardCommand {
         }
 
         int rewardLevel = commentInfo.level;
-        int expectedSlots = Math.min(rewardLevel * 15, 900);
+        int expectedSlots = Math.min(rewardLevel * LZSavedData.SLOTS_PER_LEVEL, LZSavedData.CONTAINER_SIZE);
 
         UUID playerUUID = player.getUUID();
 

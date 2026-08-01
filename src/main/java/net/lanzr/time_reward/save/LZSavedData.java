@@ -11,7 +11,12 @@ import javax.annotation.Nullable;
 public class LZSavedData extends SavedData {
     @Nullable
     public static LZSavedData INSTANCE;
-    public static final int CONTAINER_SIZE = 900;
+    /** 奖励库存总容量。 */
+    public static final int CONTAINER_SIZE = 360;
+    /** 每个等级对应的槽位数。 */
+    public static final int SLOTS_PER_LEVEL = 10;
+    /** 每级所需天数。 */
+    public static final int DAYS_PER_LEVEL = 30;
     public static final String SAVE_DATA_NAME = "timeReward-SavedData";
     private static final String TAG_ITEMS = "Items";
     private static final String TAG_NAME_RECORD = "Records";
@@ -29,6 +34,7 @@ public class LZSavedData extends SavedData {
 
     public LZSavedData() {
         super();
+        SET_DONE = false; // 新世界默认未启用
     }
 
 
