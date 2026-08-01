@@ -264,7 +264,7 @@ public class BackpackContainer extends AbstractContainerMenu {
      * 根据容器总容量，返回客户端允许的最大滚动偏移量。
      */
     private int getClientMaxScrollOffset() {
-        int totalRows = storageContainer.getContainerSize() / COLS;
+        int totalRows = (storageContainer.getContainerSize() + COLS - 1) / COLS;
         return Math.max(0, totalRows - clientVisibleRows);
     }
 
@@ -294,7 +294,7 @@ public class BackpackContainer extends AbstractContainerMenu {
      * @return 最大滚动偏移量（行数），基于容器总容量计算
      */
     public int getMaxScrollOffset() {
-        int totalRows = storageContainer.getContainerSize() / COLS;
+        int totalRows = (storageContainer.getContainerSize() + COLS - 1) / COLS;
         return Math.max(0, totalRows - clientVisibleRows);
     }
 

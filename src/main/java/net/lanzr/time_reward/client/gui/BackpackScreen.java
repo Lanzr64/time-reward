@@ -530,7 +530,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackContainer> {
 
         @Override
         protected int getContentHeight() {
-            int totalRows = menu.getContainerSize() / BackpackContainer.COLS;
+            int totalRows = (menu.getContainerSize() + BackpackContainer.COLS - 1) / BackpackContainer.COLS;
             return totalRows * SLOT_SIZE;
         }
 
