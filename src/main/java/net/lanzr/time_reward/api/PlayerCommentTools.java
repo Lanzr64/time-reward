@@ -4,15 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.datafixers.types.templates.Check;
 
+import net.lanzr.time_reward.save.LZSavedData;
 import java.io.*;
 import java.time.LocalDate;
 
 public class PlayerCommentTools {
     static final String PATH = "lzFiles";
     static final String COMMENT_RECORD_PATH = PATH + "/comment-record.json";
-    static final int[] COMMENT_LEVEL = {1,3,6,12,24,36,48};
     private static final Object FILE_LOCK = new Object();
 
     public static void init() {
@@ -104,23 +103,11 @@ public class PlayerCommentTools {
                 + (nowMonth - Integer.parseInt(parts[1])) * 30
                 + (nowDay - Integer.parseInt(parts[2]));
 
-        int allMonth = playerDays / 30;
-        int nextMonth =  0;
-        int rewardLevel = 0;
-        for (int i = 0; i < COMMENT_LEVEL.length; i++) {
-            if(allMonth < COMMENT_LEVEL[i]) {
-                nextMonth = COMMENT_LEVEL[i];
-                break;
-            }
-            rewardLevel++;
-        }
-        commentInfo.level = rewardLevel;
+        int allMonth = playerDays / LZSavedData.DAYS_PER_LEVEL;
+        commentInfo.level = allMonth + 1; // 等级从1开始，即0天=1级，30天=2级
         commentInfo.markTime = timeStr;
-        if(nextMonth!=0) {
-            commentInfo.nextLevelRemainDays = nextMonth * 30 - playerDays;
-        } else {
-            commentInfo.nextLevelRemainDays = 0;
-        }
+        int remainder = playerDays % LZSavedData.DAYS_PER_LEVEL;
+        commentInfo.nextLevelRemainDays = (remainder == 0) ? LZSavedData.DAYS_PER_LEVEL : LZSavedData.DAYS_PER_LEVEL - remainder;
         return 0;
     }
 }
